@@ -19,15 +19,9 @@ typedef struct {
 	Vector direction;
 } Ray;
 
-typedef  Ray Line;
+typedef  Ray Line;  // Ö±Ïß
 
-//typedef struct {
-//	Point p;
-//	Vector dir;
-//} Line;
-
-
-
+ 
 typedef struct {
 	Vector normal;
 	double distance;

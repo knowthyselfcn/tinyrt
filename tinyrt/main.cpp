@@ -46,15 +46,38 @@ void  normalizeColor(Color* color) {
 }
 
 
+Intersection getFirstIntersection(Ray* ray, Plane* plane, Sphere* sphere)
+{
+    Intersection nearestIntersection;
+
+
+
+
+}
+
+Color traceRay(Ray* ray, Plane* plane, Sphere* sphere)
+{
+    Color color = { 0, 0, 0 };
+    // 针对每一条视线，都需要判断首次与哪个物体相交： 判断交点到眼睛的距离即可
+
+
+
+
+
+    return color;
+}
+
+
 Color traceRay_Plane(Ray* ray, Plane* plane) {
 	Color color = { 0, 0, 0 };
 
 	double gamma = scalarProduct(&(ray->direction), &(plane->normal));
 	double side = plane->distance - scalarProduct(&(plane->normal), &(ray->origin));		// 有时候Ray 是
 	Intersection intersect = { 0, 0, 0, 0, plane };
+    // 需要计算相交点的位置
 	if (gamma * side > epsilon) {
 		double lambda = side / gamma;
-		intersect.point.x = ray->origin.x + ray->direction.x * lambda;   // 模拟光源光衰减
+		intersect.point.x = ray->origin.x + ray->direction.x * lambda;  
 		intersect.point.y = ray->origin.y + ray->direction.y * lambda;
 		intersect.point.z = ray->origin.z + ray->direction.z * lambda;
 		intersect.lambda = lambda;
@@ -88,13 +111,17 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, -1, 0, 5, 255, 0, 0 };
 
+    Sphere sphere = {0,0,0, 1.0 };
+
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;
 	for (x = 0; x<width; x++) {
 		for (y = 0; y<height; y++) {
 			Ray r = getRay(x, y);
 			
-			Color c = traceRay_Plane(&r, &basePlane);
+			//Color c = traceRay_Plane(&r, &basePlane);
+            Color c = traceRay(&r, &basePlane, &sphere);
+
 
 			normalizeColor(&c);
 			int ipos = 3 * (width * y + x);
