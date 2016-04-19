@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\raytracer\raytracer\bmp.h">
+    <ClCompile Include="definition.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\raytracer\raytracer\definition.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bmp.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\raytracer\raytracer\bmp.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\raytracer\raytracer\main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    <ClInclude Include="bmp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

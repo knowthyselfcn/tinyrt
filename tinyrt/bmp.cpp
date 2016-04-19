@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 #include "bmp.h"
 
- 
+
 
 int
 read_bmp(const char *filename, int *width, int *height, unsigned char *rgb)

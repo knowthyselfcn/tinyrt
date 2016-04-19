@@ -18,6 +18,14 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="bmp.cpp" />
+    <ClCompile Include="definition.h" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="bmp.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6632CB16-72FF-4B01-AA7E-9C49D2C5F31A}</ProjectGuid>
     <RootNamespace>tinyrt</RootNamespace>
@@ -114,14 +122,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\raytracer\raytracer\bmp.h" />
-    <ClInclude Include="..\..\raytracer\raytracer\definition.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\raytracer\raytracer\bmp.cpp" />
-    <ClCompile Include="..\..\raytracer\raytracer\main.cpp" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
