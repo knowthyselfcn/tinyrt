@@ -15,6 +15,13 @@ typedef Vector Point;
 typedef Vector Color;
 
 typedef struct {
+    double  x;
+    double 	y;
+    double 	z;
+    double  w;
+} Vector4;
+
+typedef struct {
 	Point origin;
 	Vector direction;
 } Ray;
@@ -24,7 +31,6 @@ typedef  Ray Line;  // 直线
  
 typedef struct {
 	Vector normal;
-	//double distance;
     Point p;
 	Color color;
 } Plane;		// 无限宽广的平面, 且只是与象平面平行
@@ -47,6 +53,13 @@ typedef struct {
 } Intersection;
 
 
+typedef struct  {
+    double m[3][3];
+} Mat3;
+
+typedef struct {
+    double m[4][4];
+} Mat4;
 
 
 #endif 
