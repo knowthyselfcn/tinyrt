@@ -39,3 +39,6 @@
 
 *.bmp
 Debug/
+*.tlog
+*.log
+*.pdb
