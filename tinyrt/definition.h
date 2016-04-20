@@ -24,7 +24,8 @@ typedef  Ray Line;  // 直线
  
 typedef struct {
 	Vector normal;
-	double distance;
+	//double distance;
+    Point p;
 	Color color;
 } Plane;		// 无限宽广的平面, 且只是与象平面平行
 
