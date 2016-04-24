@@ -53,6 +53,11 @@ typedef struct {
 } Intersection;
 
 
+
+
+
+
+
 typedef struct  {
     double m[3][3];
 } Mat3;
@@ -60,6 +65,10 @@ typedef struct  {
 typedef struct {
     double m[4][4];
 } Mat4;
+
+typedef struct {
+    double m[4][1];
+} Mat4_1;
 
 
 #endif 
