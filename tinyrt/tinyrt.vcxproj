@@ -22,9 +22,13 @@
     <ClCompile Include="bmp.cpp" />
     <ClCompile Include="definition.h" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="rtmath.cpp" />
+    <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmp.h" />
+    <ClInclude Include="rtmath.h" />
+    <ClInclude Include="test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6632CB16-72FF-4B01-AA7E-9C49D2C5F31A}</ProjectGuid>

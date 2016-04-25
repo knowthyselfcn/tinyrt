@@ -129,7 +129,7 @@ Mat3 inverseMat3(Mat3 *matrix)
 
 double determinant(Mat3* mat)
 {
-    double r ;
+    double r = 0;
     
     return r;
 }
@@ -219,7 +219,7 @@ bool testMultiplyMat3()
 //
 Mat4 multiplyMat4(Mat4* m1, Mat4* m2)
 {
-    Mat4 mat;
+    Mat4 mat = {0};
     
     return mat;
 }
