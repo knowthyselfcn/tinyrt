@@ -8,23 +8,25 @@
 
 #include <iostream>
 
-Point light = { 0, 10, 0 };		// 点光源的位置
-Point center = { 0, 0, 0 };     // 坐标系原点
-Point eye = {0, 150, 0};                          // 世界坐标系
-Vector lookAt = {0, -20, 0};  //眼睛向前的方向   // 世界坐标系
-Vector up = {0, 0, -1};  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
+Point light = { 0, 5, 0 };		// 点光源的位置
+Point eye = {0, 0, 10};                          // 世界坐标系
 
 
 
-double distance = 480; //  眼睛与视窗的距离
-const static int width = 640 * 2;
-const static int height = 480 * 2;
-
- 
+double distance =  1.5; //  眼睛与视窗的距离
+const static int width = 640  ;  // 640 pixel    0.64m
+const static int height = 480  ;
 
 // view plane  的指定方式： eye space中 －z 垂直通过view plane
 // view plane 的宽边与eye space y 轴（up）平行
-Ray getRay(int x, int y ) {
+// x,y 是像素坐标, 一个像素0.1cm，故view plane 宽64cm， 类似于25寸屏幕
+Ray getRay(int x, int y ) {  
+    Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
+    Vector lookAt = { 0, 0, -20 };  //眼睛向前的方向  
+
+    //up = {0, 0, -1};   // 向地面俯视
+    //lookAt = {0, -10, 0};
+
     Ray r;
     r.origin = eye;         // 设定眼睛的位置
 
@@ -38,10 +40,16 @@ Ray getRay(int x, int y ) {
     Vector rw = {-w.x, -w.y, -w.z};
 
     Vector a = scalarVector(&rw, distance);
-    Vector b = scalarVector(&v, height / 2 - y);
-    Vector c = scalarVector(&u, -width / 2 + x);
+    
+    double viewPlaneHeight = ((double)height) / 1000;
+    Vector b = scalarVector(&v, viewPlaneHeight / 2 - ((double)y)/1000);
+    
+    double viewPlaneWidth = ((double)width) / 1000;
+    Vector c = scalarVector(&u, - viewPlaneWidth / 2 + ((double)x) / 1000);
 
     r.direction = vectorAdd(a, vectorAdd(b,  c));   //
+
+    //std::cout << vectorLength(r.direction) << "\t" << r.direction.x << "\t" << r.direction.y << "\t" << r.direction.z << std::endl;
     r.viewPlanePos = pointAdd(eye, r.direction);
 
     return r;
@@ -112,30 +120,27 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
     
     //if (d > sphere->radius) {
     if (disc >= 0) {
-        color = { 255, 255, 255 };
         //求相交点，有一点和两点，两点时后面的交点被忽略
         double e = sqrt(disc);
         double t = -(b + e) * a * 2.0;
        // std::cout << disc << std::endl;
-        if (t > epsilon) {
+        if (t >= 0) {
             double tmin = t;
             Intersect intersection;
             intersection.point = vectorAdd(ray->origin, scalarVector(&rayDir, t));
-
             
             double len = vectorLength(scalarVector(&rayDir, t));
-            std::cout << len << std::endl;
-
-
-
-            color = {0};
+            //std::cout << len << "\t" <<  d << std::endl;
+            color = { 255, 0, 0 };
+             
         }
         else {
-
+            std::cout << t << std::endl;
         }
     }
     else {
-        color = {0, 255, 0};
+         color = {255, 255, 255};   // sky 
+         //std::cout << "no sphere  intersection" << std::endl;
     }
 
 
@@ -190,7 +195,7 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
 
-    Sphere sphere = {0,2,0,     2.0 };
+    Sphere sphere = {0,1,0,      0.5 };
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;

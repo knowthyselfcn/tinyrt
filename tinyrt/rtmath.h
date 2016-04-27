@@ -1,11 +1,3 @@
-//
-//  rtmath.h
-//  tinyrt
-//
-//  Created by Claude Q. on 4/23/16.
-//  Copyright (c) 2016 A. S. All rights reserved.
-//
-
 #ifndef __tinyrt__rtmath__
 #define __tinyrt__rtmath__
 
