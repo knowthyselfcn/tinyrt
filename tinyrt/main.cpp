@@ -10,60 +10,138 @@
 
 Point light = { 0, 10, 0 };		// 点光源的位置
 Point center = { 0, 0, 0 };     // 坐标系原点
-Point eye = {0, 20, 320};                          // 世界坐标系
-Vector lookAtDir = {0, 0, -8};  //眼睛向前的方向   // 世界坐标系
-Vector up = {0, 1, 0};  // 头顶的方向, 局部坐标系，// 世界坐标系
+Point eye = {0, 150, 0};                          // 世界坐标系
+Vector lookAt = {0, -20, 0};  //眼睛向前的方向   // 世界坐标系
+Vector up = {0, 0, -1};  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
+
+
 
 double distance = 480; //  眼睛与视窗的距离
 const static int width = 640 * 2;
 const static int height = 480 * 2;
 
-
-
-bool isLineParallel(Ray* r1, Ray* r2)
-{
-    return false;
-}
-
-
+ 
 
 // view plane  的指定方式： eye space中 －z 垂直通过view plane
 // view plane 的宽边与eye space y 轴（up）平行
-Ray getRay(int w, int h) {
-	Ray r;
+Ray getRay(int x, int y ) {
+    Ray r;
     r.origin = eye;         // 设定眼睛的位置
 
-    Vector viewRight2Left = reverseVector(  crossVector(&lookAtDir, &up) );
-    
-    Vector rup = localToWorld(&up, &lookAtDir, &up, &eye);
-    
-    //testMultiplyMat3();
-    
-    //std::cout << rup.x << "\t" << rup.y << "\t" << rup.z << std::endl;
-    
 
-    r.direction = vectorAdd(scalarVector(&lookAtDir, distance),
-        vectorAdd(scalarVector(&up, height / 2 - h), scalarVector(&viewRight2Left, -width / 2 + w)));
+    Vector w = normalize( &pointDifference(eye, lookAt) ) ;  
+    Vector u = normalize(&crossVector(&up, &w));
+    Vector v = normalize(&crossVector(&w, &u));
     
-	//r.direction.x =  + 0.5;	// left to right
-	//r.direction.y = height / 2 - h + 0.5;	// top to down
-	//r.direction.z = -960;
-	
-    
-    //std::cout << r.direction.x << "\t" << r.direction.y << "\t" << r.direction.z << std::endl;
-    
+    Vector rup = localToWorld(&up, &u, &v, &eye);
+
+    Vector rw = {-w.x, -w.y, -w.z};
+
+    Vector a = scalarVector(&rw, distance);
+    Vector b = scalarVector(&v, height / 2 - y);
+    Vector c = scalarVector(&u, -width / 2 + x);
+
+    r.direction = vectorAdd(a, vectorAdd(b,  c));   //
+    r.viewPlanePos = pointAdd(eye, r.direction);
+
     return r;
 }
 
+// 如果相交，则 objectId 为 正数， 否则为-1
+Intersect intersectSphere(Ray* ray, Sphere* sphere)
+{
+    Intersect intersection = { 0, 0, 0, -1 };
+
+    return intersection;
+}
+
+Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
+{
+    Intersect intersection = {0,0,0, -1};
+
+    for (int i = 0; i < num; i++)
+    {
+        Object* obj = objs[i];
+        switch (obj->type)
+        {
+        case SPHERE:
+            intersection = intersectSphere(ray, (Sphere*)obj->o );
+        default:
+            break;
+        }
+    }
 
 
-Color traceRay(Ray* ray, Plane* plane, Sphere* sphere)
+    return intersection;
+}
+
+
+// 针对每一条视线，都需要判断首次与哪个物体相交： 判断交点到眼睛的距离即可
+Color traceRay(Ray* ray, Object *objs[], int num)
 {
     Color color = { 0, 0, 0 };
-    // 针对每一条视线，都需要判断首次与哪个物体相交： 判断交点到眼睛的距离即可
+
+    for (int i = 0; i < num; i++)
+    {
+        Intersect intersection = getFirstIntersection(ray, objs, num);
+    }
 
     return color;
 }
+
+// ground up P59
+Color traceRay_Sphere(Ray* ray, Sphere* sphere)
+{
+    Color color = { 0, 0, 0 };
+    // 求视线与球体的距离  设眼睛坐标e，圆心c， 视线与 ec 的夹角为 theta
+    Vector ec = pointDifference(sphere->center, eye);
+    Vector rayDir = normalize(&ray->direction);
+    double cos_theta = scalarProduct(&ec, &rayDir) / vectorLength(ec) / vectorLength(rayDir);
+    double theta = acos(cos_theta);
+    double d = vectorLength(ec) * sin(theta);   // 球心到直线距离
+
+    Vector ce = pointDifference(eye, sphere->center);
+    Vector l = normalize(&rayDir);
+
+    Vector temp = pointDifference(ray->origin, sphere->center);
+    double a = scalarProduct(&rayDir, &rayDir);
+    double b = 2 * scalarProduct(&temp, &rayDir);
+    double c = scalarProduct(&temp, &temp) - sphere->radius * sphere->radius;
+    double disc = b * b - 4 * a*c;
+ 
+    
+    //if (d > sphere->radius) {
+    if (disc >= 0) {
+        color = { 255, 255, 255 };
+        //求相交点，有一点和两点，两点时后面的交点被忽略
+        double e = sqrt(disc);
+        double t = -(b + e) * a * 2.0;
+       // std::cout << disc << std::endl;
+        if (t > epsilon) {
+            double tmin = t;
+            Intersect intersection;
+            intersection.point = vectorAdd(ray->origin, scalarVector(&rayDir, t));
+
+            
+            double len = vectorLength(scalarVector(&rayDir, t));
+            std::cout << len << std::endl;
+
+
+
+            color = {0};
+        }
+        else {
+
+        }
+    }
+    else {
+        color = {0, 255, 0};
+    }
+
+
+    return color;
+}
+
 
 // 计算直线与平面的交点
 /*
@@ -72,13 +150,10 @@ Color traceRay(Ray* ray, Plane* plane, Sphere* sphere)
 */
 Color traceRay_Plane(Ray* ray, Plane* plane) {
 	Color color = { 0, 0, 0 };
-    
-    //std::cout << ray->direction.x << "\t" << ray->direction.y << "\t" << ray->direction.z << std::endl;
 
     Vector reverseN = reverseVector(plane->normal);
     double cos_beta = scalarProduct(&ray->direction, &reverseN) / vectorLength(ray->direction) / vectorLength(reverseN);
 
-    //std::cout << cos_beta << std::endl;
     if (cos_beta < 0) {
         // no intersect  展示天空
         color = { 255, 255, 255 };
@@ -96,14 +171,11 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
         Intersection intersect = { z, 0, plane };
 
         Vector directionToLight = pointDifference(light, intersect.point);
-        //Ray lightRay = { intersect.point, directionToLight };
 
         double length = vectorLength(directionToLight);
-        
+       
 
-        double scale = 1 / (length * length *0.0001 + 0.003 * length +  1);
-        
-        //std::cout << ez.x << "\t" << length << "\t" << cos_beta << std::endl;
+        double scale = 1 / (length * length * 0.005 + length * 0.01 + 1 );  // + 0.03 * length
 
         color = intersect.plane->color;
         color.x *= scale;				// 模拟光源光衰减
@@ -118,18 +190,17 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
 
-    Sphere sphere = {0,0,0,     1.0 };
+    Sphere sphere = {0,2,0,     2.0 };
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;
 	for (x = 0; x<width; x++) {     // 列扫描
 		for (y = 0; y<height; y++) {
-            //if (!(y < 583 && y > 581))
-            //    continue;
 			Ray r = getRay(x, y);
 			
-			Color c = traceRay_Plane(&r, &basePlane);
-			
+            //Color c = traceRay_Plane(&r, &basePlane);
+            Color c = traceRay_Sphere(&r, &sphere);
+
             int ipos = 3 * (width * y + x);
 
 			rgb[ipos + 2] = (unsigned char)c.z;
@@ -138,7 +209,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	write_bmp("test.bmp", width, height, rgb);
-	 free(rgb);
+	free(rgb);
      
      //system("pause");
 	return 0;

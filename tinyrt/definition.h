@@ -24,6 +24,7 @@ typedef struct {
 typedef struct {
 	Point origin;
 	Vector direction;
+    Vector viewPlanePos;
 } Ray;
 
 typedef  Ray Line;  // Ö±Ïß
@@ -46,6 +47,7 @@ typedef struct {
 	double radius;
 } Sphere;
 
+
 typedef struct {
 	Point point;
 	double lambda;
@@ -53,6 +55,10 @@ typedef struct {
 } Intersection;
 
 
+typedef struct {
+    Point point;
+    int objectId;   // index from 0 in  Object[]
+} Intersect;
 
 
 
@@ -69,6 +75,23 @@ typedef struct {
 typedef struct {
     double m[4][1];
 } Mat4_1;
+
+enum TYPE {
+    PLANE = 0,
+    RECTANGLE ,
+    TRIANGLE,
+
+    SPHERE,
+    CUBOID,
+    CONE,
+    FRUSTRUM
+};
+
+// need to free the source manually
+typedef struct {
+    enum TYPE type;
+    void *o;
+} Object;
 
 
 #endif 
