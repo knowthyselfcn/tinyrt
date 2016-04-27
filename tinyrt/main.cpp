@@ -137,13 +137,7 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
 
             double intersectRayLen = vectorLength(rayToLigthVector);
             double length = intersectRayLen;
-            double scale = 1 / (length * length * 0.05 + length * 0.001 + 1);  // + 0.03 * length
-
-            //double len = vectorLength(scalarVector(&rayDir, t));
-            //std::cout << len << "\t" << intersectRayLen<< "\t" << d << std::endl;
-
-            //if (rayToLight.origin.y > 0)
-            //    std::cout << "sdfs" << std::endl;
+            double scale = 1 / (length * length * 0.025 + length * 0.001 + 1);  // + 0.03 * length
 
             bool isRayToLightSphereIntersecting = doesRaySphereIntersect(&rayToLight, sphere);
             if (isRayToLightSphereIntersecting) {
