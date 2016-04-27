@@ -100,7 +100,7 @@ Color traceRay(Ray* ray, Object *objs[], int num)
 // ground up P59
 Color traceRay_Sphere(Ray* ray, Sphere* sphere)
 {
-    Color color = { 0, 0, 0 };
+    Color color = { 255, 0, 0 };
     // 求视线与球体的距离  设眼睛坐标e，圆心c， 视线与 ec 的夹角为 theta
     Vector ec = pointDifference(sphere->center, eye);
     Vector rayDir = normalize(&ray->direction);
@@ -119,19 +119,42 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
  
     
     //if (d > sphere->radius) {
-    if (disc >= 0) {
+    if (disc > 0) {
         //求相交点，有一点和两点，两点时后面的交点被忽略
         double e = sqrt(disc);
-        double t = -(b + e) * a * 2.0;
+        double t = -(b + e) /( a * 2.0);
        // std::cout << disc << std::endl;
         if (t >= 0) {
             double tmin = t;
             Intersect intersection;
-            intersection.point = vectorAdd(ray->origin, scalarVector(&rayDir, t));
+            Vector normal = scalarVector(&vectorAdd(temp, scalarVector(&rayDir, t)), sphere->radius);
+            intersection.point = pointAdd(ray->origin, scalarVector(&rayDir, t));
             
-            double len = vectorLength(scalarVector(&rayDir, t));
-            //std::cout << len << "\t" <<  d << std::endl;
-            color = { 255, 0, 0 };
+            Vector rayToLigthVector = pointDifference(light, intersection.point);
+            Ray rayToLight;
+            rayToLight.origin = intersection.point;
+            rayToLight.direction = rayToLigthVector;
+
+            double intersectRayLen = vectorLength(rayToLigthVector);
+            double length = intersectRayLen;
+            double scale = 1 / (length * length * 0.05 + length * 0.001 + 1);  // + 0.03 * length
+
+            //double len = vectorLength(scalarVector(&rayDir, t));
+            //std::cout << len << "\t" << intersectRayLen<< "\t" << d << std::endl;
+
+            //if (rayToLight.origin.y > 0)
+            //    std::cout << "sdfs" << std::endl;
+
+            bool isRayToLightSphereIntersecting = doesRaySphereIntersect(&rayToLight, sphere);
+            if (isRayToLightSphereIntersecting) {
+                color = {0};        // no light, dark
+            }
+            else {
+
+                color.x *= scale;				// 模拟光源光衰减
+                color.y *= scale;
+                color.z *= scale;
+            }
              
         }
         else {
@@ -195,7 +218,7 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
 
-    Sphere sphere = {0,1,0,      0.5 };
+    Sphere sphere = {0, -0.05, 0,      1.5 };
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;

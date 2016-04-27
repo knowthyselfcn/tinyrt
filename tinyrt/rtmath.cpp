@@ -261,7 +261,33 @@ Vector localToWorld(Vector* v, Vector* xPrime, Vector* yPrime, Vector* eye)
 }
 
 
+bool doesRaySphereIntersect(Ray* ray, Sphere* sphere)
+{
+    bool intersects = false;
 
+    //Vector rayDir = normalize(&ray->direction);
+    //Vector temp = pointDifference(ray->origin, sphere->center);
+    //double a = scalarProduct(&rayDir, &rayDir);
+    //double b = 2 * scalarProduct(&temp, &rayDir);
+    //double c = scalarProduct(&temp, &temp) - sphere->radius * sphere->radius;
+    //double disc = b * b - 4 * a*c;
+
+    //if (disc - 0 < epsilon )
+    //    intersects = false;
+    //else
+    //    intersects = true;
+
+    Vector centerIntersection = pointDifference(ray->origin, sphere->center);
+    double cos_theta = scalarProduct(&ray->direction, &centerIntersection) / vectorLength(ray->direction)
+        / vectorLength(centerIntersection);
+
+    if (cos_theta > 0)
+        intersects = false;
+    else
+        intersects = true;
+
+    return intersects;
+}
 
 
 
