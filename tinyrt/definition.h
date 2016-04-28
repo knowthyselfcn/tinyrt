@@ -48,16 +48,16 @@ typedef struct {
 } Sphere;
 
 
-typedef struct {
-	Point point;
-	double lambda;
-	Plane* plane;
-} Intersection;
+//typedef struct {
+//	Point point;
+//	//double lambda;
+//	//Plane* plane;
+//} Intersection;
 
 
 typedef struct {
     Point point;
-    int objectId;   // index from 0 in  Object[]
+    int objectId;   // index from 0 in  Object[],  if -1, means no intersect
 } Intersect;
 
 

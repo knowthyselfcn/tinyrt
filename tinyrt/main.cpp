@@ -60,28 +60,138 @@ Intersect intersectSphere(Ray* ray, Sphere* sphere)
 {
     Intersect intersection = { 0, 0, 0, -1 };
 
+    Vector rayDir = normalize(&ray->direction);
+    Vector ce = pointDifference(eye, sphere->center);
+    Vector l = normalize(&rayDir);
+
+    Vector temp = pointDifference(ray->origin, sphere->center);
+    double a = scalarProduct(&rayDir, &rayDir);
+    double b = 2 * scalarProduct(&temp, &rayDir);
+    double c = scalarProduct(&temp, &temp) - sphere->radius * sphere->radius;
+    double disc = b * b - 4 * a*c;
+
+    if (disc > 0) {
+        //求相交点，有一点和两点，两点时后面的交点被忽略
+        double e = sqrt(disc);
+        double t = -(b + e) / (a * 2.0);
+        // std::cout << disc << std::endl;
+        if (t >= 0) {
+            double tmin = t;
+            Intersect intersection;
+            Vector normal = scalarVector(&vectorAdd(temp, scalarVector(&rayDir, t)), sphere->radius);
+            intersection.point = pointAdd(ray->origin, scalarVector(&rayDir, t));
+        }
+    }
+    else {
+
+    }
+
+
     return intersection;
 }
+
+Intersect intersectPlane(Ray* ray, Plane* plane)
+{
+    Intersect intersection = { 0, 0, 0, -1 };
+
+
+    Vector reverseN = reverseVector(plane->normal);
+    double cos_beta = scalarProduct(&ray->direction, &reverseN) / vectorLength(ray->direction) / vectorLength(reverseN);
+
+    if (cos_beta < 0) {
+        // no intersect  展示天空
+   
+    }
+    else {
+        Vector ep = pointDifference(plane->p, ray->origin);
+        double cos_theta = scalarProduct(&ep, &reverseN) / vectorLength(ep) / vectorLength(reverseN);
+        double h = vectorLength(ep) * cos_theta;
+
+        Vector normaledRay = normalize(&ray->direction);
+        Vector ez = scalarVector(&normaledRay, (h / cos_beta));
+
+        Point z = pointAdd(ray->origin, ez);
+
+        intersection.point = z;
+    }
+
+
+    return intersection;
+}
+
+Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect)
+{
+    Color color = { 0 };
+
+    Vector directionToLight = pointDifference(light, intersect->point);
+
+    double length = vectorLength(directionToLight);
+
+    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+
+    color = { 255, 0, 0 };      //intersect.plane->color;
+    color.x *= scale;				// 模拟光源光衰减
+    color.y *= scale;
+    color.z *= scale;
+
+
+    return color;
+}
+
 
 Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
 {
     Intersect intersection = {0,0,0, -1};
-
-    for (int i = 0; i < num; i++)
+    int i = -1;
+    for ( i = 0; i < num; i++)
     {
         Object* obj = objs[i];
         switch (obj->type)
         {
         case SPHERE:
             intersection = intersectSphere(ray, (Sphere*)obj->o );
+            break;
+        //case RECTANGLE:
+        //    intersection = intersectRectangle(ray, (Rectangle*)obj->o);
+        //    break;
+        case PLANE:
+            intersection = intersectPlane(ray, (Plane*)obj->o);
+            break;
         default:
             break;
         }
     }
-
+    intersection.objectId = i-1;
 
     return intersection;
 }
+
+Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection)
+{
+    Color color = {0};
+
+    Vector rayToLigthVector = pointDifference(light, intersection->point);
+    Ray rayToLight;
+    rayToLight.origin = intersection->point;
+    rayToLight.direction = rayToLigthVector;
+
+    double intersectRayLen = vectorLength(rayToLigthVector);
+    double length = intersectRayLen;
+    double scale = 1 / (length * length * 0.025 + length * 0.001 + 1);  // + 0.03 * length
+
+    bool isRayToLightSphereIntersecting = doesRaySphereIntersect(&rayToLight, sphere);
+    if (isRayToLightSphereIntersecting) {
+        color = { 0 };        // no light, dark
+    }
+    else {
+        color.x *= scale;				// 模拟光源光衰减
+        color.y *= scale;
+        color.z *= scale;
+    }
+
+    return color;
+}
+
 
 
 // 针对每一条视线，都需要判断首次与哪个物体相交： 判断交点到眼睛的距离即可
@@ -92,6 +202,24 @@ Color traceRay(Ray* ray, Object *objs[], int num)
     for (int i = 0; i < num; i++)
     {
         Intersect intersection = getFirstIntersection(ray, objs, num);
+        if (-1 == intersection.objectId) {
+            // no intersect
+        }
+        else {
+            Object* obj = objs[intersection.objectId];
+            // 开始着色
+            switch (obj->type)    
+            {
+            case SPHERE:
+                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection);
+                break;
+            case PLANE:
+                color = shade_Plane(ray, (Plane*)obj->o, &intersection);
+                break;
+            default:
+                break;
+            }
+        }
     }
 
     return color;
@@ -144,7 +272,6 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
                 color = {0};        // no light, dark
             }
             else {
-
                 color.x *= scale;				// 模拟光源光衰减
                 color.y *= scale;
                 color.z *= scale;
@@ -152,7 +279,7 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
              
         }
         else {
-            std::cout << t << std::endl;
+            //std::cout << t << std::endl;
         }
     }
     else {
@@ -190,16 +317,16 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
        
         Point z = pointAdd(ray->origin, ez);
 
-        Intersection intersect = { z, 0, plane };
+        Intersect intersect  ;
+        intersect.point = z;
 
         Vector directionToLight = pointDifference(light, intersect.point);
 
         double length = vectorLength(directionToLight);
-       
 
         double scale = 1 / (length * length * 0.005 + length * 0.01 + 1 );  // + 0.03 * length
 
-        color = intersect.plane->color;
+        color = { 255, 0, 0 };      //intersect.plane->color;
         color.x *= scale;				// 模拟光源光衰减
         color.y *= scale;
         color.z *= scale;
@@ -211,8 +338,16 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
-
     Sphere sphere = {0, -0.05, 0,      1.5 };
+
+    Object obj1;
+    obj1.type = PLANE;
+    obj1.o = (void*)&basePlane;
+    Object obj2;
+    obj2.type = SPHERE;
+    obj2.o = (void*)& sphere;
+
+    Object* objs[] = { &obj1, &obj2 };
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;
@@ -221,7 +356,9 @@ int main(int argc, char* argv[]) {
 			Ray r = getRay(x, y);
 			
             //Color c = traceRay_Plane(&r, &basePlane);
-            Color c = traceRay_Sphere(&r, &sphere);
+            //Color c = traceRay_Sphere(&r, &sphere);
+
+            Color c = traceRay(&r, objs, 2);
 
             int ipos = 3 * (width * y + x);
 
