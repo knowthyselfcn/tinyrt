@@ -25,6 +25,7 @@ typedef struct {
 	Point origin;
 	Vector direction;
     Vector viewPlanePos;
+    int px, py;   //
 } Ray;
 
 typedef  Ray Line;  // Ö±Ïß
@@ -93,5 +94,11 @@ typedef struct {
     void *o;
 } Object;
 
+
+
+typedef struct _List{
+    Intersect intersect ;
+    struct _List* next ;
+} List;
 
 #endif 
