@@ -61,7 +61,12 @@ typedef struct {
     int objectId;   // index from 0 in  Object[],  if -1, means no intersect
 } Intersect;
 
-
+typedef struct {
+    Point p;   
+    Vector wVector;   // widht
+    Vector hVector;
+      
+} Cuboid;
 
 
 

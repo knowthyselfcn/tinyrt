@@ -9,7 +9,7 @@
 #include <iostream>
 
 Point light = { 0, 5, 0 };		// 点光源的位置
-Point eye = {0, 1, 10};                          // 世界坐标系
+Point eye = {0, 10, 20};                          // 世界坐标系
 
 
 
@@ -22,7 +22,7 @@ const static int height = 480  ;
 // x,y 是像素坐标, 一个像素0.1cm，故view plane 宽64cm， 类似于25寸屏幕
 Ray getRay(int x, int y ) {  
     Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
-    Vector lookAt = { 0, 0, -20 };  //眼睛向前的方向  
+    Vector lookAt = { 0, 0, 0 };  //眼睛向前的方向  
 
     //up = {0, 0, -1};   // 向地面俯视
     //lookAt = {0, -10, 0};
@@ -148,6 +148,12 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect)
 }
 
 
+//Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
+//{
+//
+//}
+
+
 Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
 {
     Intersect intersection = {0,0,0, -1};
@@ -264,6 +270,8 @@ Color traceRay(Ray* ray, Object *objs[], int num)
             case PLANE:
                 color = shade_Plane(ray, (Plane*)obj->o, &intersection);
                 break;
+            case CUBOID:
+                color = shade_Plane(ray, (Plane*)obj->o, &intersection);
             default:
                 break;
             }
