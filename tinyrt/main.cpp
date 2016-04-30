@@ -37,10 +37,12 @@ Ray getRay(int x, int y ) {
     Ray r;
     r.origin = eye;         // 设定眼睛的位置
 
-
-    Vector w = normalize( &pointDifference(eye, lookAt) ) ;  
-    Vector u = normalize(&crossVector(&up, &w));
-    Vector v = normalize(&crossVector(&w, &u));
+    Vector tmpW = pointDifference(eye, lookAt);
+    Vector w = normalize( &tmpW ) ;
+    Vector tmpU = crossVector(&up, &w);
+    Vector u = normalize(&tmpU);
+    Vector tmpV = crossVector(&w, &u);
+    Vector v = normalize(&tmpV);
     
     Vector rup = localToWorld(&up, &u, &v, &r.origin);
 
@@ -202,7 +204,8 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
         if (t >= 0) {
             double tmin = t;
             Intersect intersection;
-            Vector normal = scalarVector(&vectorAdd(temp, scalarVector(&rayDir, t)), sphere->radius);
+            Vector ttttttttt = vectorAdd(temp, scalarVector(&rayDir, t));
+            Vector normal = scalarVector(&ttttttttt, sphere->radius);
             intersection.point = pointAdd(ray->origin, scalarVector(&rayDir, t));
             
             Vector rayToLigthVector = pointDifference(light, intersection.point);
