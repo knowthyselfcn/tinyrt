@@ -30,6 +30,18 @@
     <ClCompile Include="test.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="cuboid.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="intersect.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="sphere.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="shade.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmp.h">
@@ -39,6 +51,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="test.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cuboid.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="intersect.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="sphere.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="shade.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

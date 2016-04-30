@@ -61,11 +61,15 @@ typedef struct {
     int objectId;   // index from 0 in  Object[],  if -1, means no intersect
 } Intersect;
 
+// 只需要指定底部的长宽，剩下的类似y轴，只指定长度即可，
+// 底部面序号1，逆时针， 顶部为3，  前面5， 后面 6，  
 typedef struct {
     Point p;   
-    Vector wVector;   // widht
-    Vector hVector;
-      
+    Vector wVector;   // widht  = x 
+    Vector hVector;   // z
+    double yLenth;      // y
+
+    Rectangle rects[6];
 } Cuboid;
 
 

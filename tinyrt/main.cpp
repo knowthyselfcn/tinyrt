@@ -1,4 +1,8 @@
 #include "definition.h"
+#include "cuboid.h"
+#include "intersect.h"
+//#include "sphere.h"
+#include "shade.h"
 
 #include "bmp.h"
 #include "rtmath.h"
@@ -9,7 +13,7 @@
 #include <iostream>
 
 Point light = { 0, 5, 0 };		// 点光源的位置
-Point eye = {0, 10, 20};                          // 世界坐标系
+                         // 世界坐标系
 
 
 
@@ -21,6 +25,9 @@ const static int height = 480  ;
 // view plane 的宽边与eye space y 轴（up）平行
 // x,y 是像素坐标, 一个像素0.1cm，故view plane 宽64cm， 类似于25寸屏幕
 Ray getRay(int x, int y ) {  
+
+    Point eye = {0, 10, 20}; 
+
     Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
     Vector lookAt = { 0, 0, 0 };  //眼睛向前的方向  
 
@@ -35,7 +42,7 @@ Ray getRay(int x, int y ) {
     Vector u = normalize(&crossVector(&up, &w));
     Vector v = normalize(&crossVector(&w, &u));
     
-    Vector rup = localToWorld(&up, &u, &v, &eye);
+    Vector rup = localToWorld(&up, &u, &v, &r.origin);
 
     Vector rw = {-w.x, -w.y, -w.z};
 
@@ -50,110 +57,16 @@ Ray getRay(int x, int y ) {
     r.direction = vectorAdd(a, vectorAdd(b,  c));   //
 
     //std::cout << vectorLength(r.direction) << "\t" << r.direction.x << "\t" << r.direction.y << "\t" << r.direction.z << std::endl;
-    r.viewPlanePos = pointAdd(eye, r.direction);
+    r.viewPlanePos = pointAdd(r.origin, r.direction);
 
     r.px = x; r.py = y; // for debug
 
     return r;
 }
 
-// 如果相交，则 objectId 为 正数， 否则为-1
-bool intersectSphere(Ray* ray, Sphere* sphere, Intersect* intersect)
-{
-    bool intersected = false;
-
-    Vector rayDir = normalize(&ray->direction);
-    Vector ce = pointDifference(eye, sphere->center);
-    Vector l = normalize(&rayDir);
-
-    Vector temp = pointDifference(ray->origin, sphere->center);
-    double a = scalarProduct(&rayDir, &rayDir);
-    double b = 2 * scalarProduct(&temp, &rayDir);
-    double c = scalarProduct(&temp, &temp) - sphere->radius * sphere->radius;
-    double disc = b * b - 4 * a*c;
-
-    if (disc > 0) {
-        //求相交点，有一点和两点，两点时后面的交点被忽略
-        double e = sqrt(disc);
-        double t = -(b + e) / (a * 2.0);
-        if (t >= 0) {
-            //double tmin = t;
-             
-            Vector normal = scalarVector(&vectorAdd(temp, scalarVector(&rayDir, t)), sphere->radius);
-            intersect->point = pointAdd(ray->origin, scalarVector(&rayDir, t));
-        }
-        intersected = true;
-    }
-    else {
-        intersected = false;
-    }
 
 
-    return intersected;
-}
-// 计算直线与平面的交点
-/*
-设眼睛位置E，视线向量v，平面经过点P，其法线n与E同侧， E投影到平面的点为E'，视线与平面交点Z， EP 与 EE' 夹角theta(fixed)， E 到平面距离h, EZ 与 -n 夹角 beta,
-| Z - E | = l =  h /  cos(beta) = EP * cos(theta) / (dot(v,n) / length(v) / length(n) )
-*/
-bool intersectPlane(Ray* ray, Plane* plane, Intersect* intersect)
-{
-    //Intersect intersection = { 0, 0, 0, -1 };
-    bool intersected = false;
-
-    Vector reverseN = reverseVector(plane->normal);
-    double cos_beta = scalarProduct(&ray->direction, &reverseN) / vectorLength(ray->direction) / vectorLength(reverseN);
-
-    if (cos_beta <= 0) {
-        // no intersect  展示天空
-        intersected = false;
-    }
-    else {
-        Vector ep = pointDifference(plane->p, ray->origin);
-        double tttt = scalarProduct(&ep, &reverseN);
-        double cos_theta = scalarProduct(&ep, &reverseN) / vectorLength(ep) / vectorLength(reverseN);
-        double h = vectorLength(ep) * cos_theta;
-
-        Vector normaledRay = normalize(&ray->direction);
-        Vector ez = scalarVector(&normaledRay, (h / cos_beta));
-
-        Point z = pointAdd(ray->origin, ez);
-
-        intersect->point = z;
-
-        intersected = true;
-    }
-
-
-    return intersected;
-}
-
-Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect)
-{
-    Color color = { 255, 0, 0 };
-
-    Vector directionToLight = pointDifference(light, intersect->point);
-
-    double length = vectorLength(directionToLight);
-
-    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
-
-    color = { 255, 0, 0 };      //intersect.plane->color;
-    color.x *= scale;				// 模拟光源光衰减
-    color.y *= scale;
-    color.z *= scale;
-
-
-    return color;
-}
-
-
-//Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
-//{
-//
-//}
-
-
+// 判断与哪个物体首次相交
 Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
 {
     Intersect intersection = {0,0,0, -1};
@@ -173,6 +86,8 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
         case PLANE:
             intersected = intersectPlane(ray, (Plane*)obj->o, &intersection);
             break;
+        case CUBOID:
+            intersected = intersectCuboid(ray, (Cuboid*)obj->o, &intersection);
         default:
             break;
         }
@@ -204,7 +119,7 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
         int pppp = width;
 
     while (curr) {
-        Vector ez = pointDifference(curr->intersect.point, eye);
+        Vector ez = pointDifference(curr->intersect.point, ray->origin);
         double vectorLen = vectorLength(ez);
         if (minLength > vectorLen) {
             minLength = vectorLen;
@@ -219,31 +134,7 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
     return intersection;
 }
 
-Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection)
-{
-    Color color = {255, 0, 0};
 
-    Vector rayToLigthVector = pointDifference(light, intersection->point);
-    Ray rayToLight;
-    rayToLight.origin = intersection->point;
-    rayToLight.direction = rayToLigthVector;
-
-    double intersectRayLen = vectorLength(rayToLigthVector);
-    double length = intersectRayLen;
-    double scale = 1 / (length * length * 0.025 + length * 0.001 + 1);  // + 0.03 * length
-
-    bool isRayToLightSphereIntersecting = doesRaySphereIntersect(&rayToLight, sphere);
-    if (isRayToLightSphereIntersecting) {
-        color = { 0 };        // no light, dark
-    }
-    else {
-        color.x *= scale;				// 模拟光源光衰减
-        color.y *= scale;
-        color.z *= scale;
-    }
-
-    return color;
-}
 
 
 
@@ -265,13 +156,13 @@ Color traceRay(Ray* ray, Object *objs[], int num)
             switch (obj->type)    
             {
             case SPHERE:
-                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection);
+                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &light);
                 break;
             case PLANE:
-                color = shade_Plane(ray, (Plane*)obj->o, &intersection);
+                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &light);
                 break;
             case CUBOID:
-                color = shade_Plane(ray, (Plane*)obj->o, &intersection);
+                color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &light);
             default:
                 break;
             }
@@ -286,13 +177,13 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
 {
     Color color = { 255, 0, 0 };
     // 求视线与球体的距离  设眼睛坐标e，圆心c， 视线与 ec 的夹角为 theta
-    Vector ec = pointDifference(sphere->center, eye);
+    Vector ec = pointDifference(sphere->center, ray->origin);
     Vector rayDir = normalize(&ray->direction);
     double cos_theta = scalarProduct(&ec, &rayDir) / vectorLength(ec) / vectorLength(rayDir);
     double theta = acos(cos_theta);
     double d = vectorLength(ec) * sin(theta);   // 球心到直线距离
 
-    Vector ce = pointDifference(eye, sphere->center);
+    Vector ce = pointDifference(ray->origin, sphere->center);
     Vector l = normalize(&rayDir);
 
     Vector temp = pointDifference(ray->origin, sphere->center);
@@ -395,6 +286,7 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
     Sphere sphere = {0, 0.5, 0,      0.5 };
+    Cuboid cuboid = { 1, 1, 0, 2, 1, 1, 2, 1, -1,  1.414213562373 };
 
     Object obj1;
     obj1.type = PLANE;

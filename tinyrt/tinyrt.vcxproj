@@ -20,14 +20,22 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bmp.cpp" />
+    <ClCompile Include="cuboid.cpp" />
     <ClCompile Include="definition.h" />
+    <ClCompile Include="intersect.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="rtmath.cpp" />
+    <ClCompile Include="shade.cpp" />
+    <ClCompile Include="sphere.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmp.h" />
+    <ClInclude Include="cuboid.h" />
+    <ClInclude Include="intersect.h" />
     <ClInclude Include="rtmath.h" />
+    <ClInclude Include="shade.h" />
+    <ClInclude Include="sphere.h" />
     <ClInclude Include="test.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
