@@ -50,6 +50,8 @@ double scalarProduct(Vector* v1, Vector* v2) {
     return v1->x*v2->x + v1->y*v2->y + v1->z*v2->z;
 }
 
+// 需要注意v1 为x， v2为y，顺序不能改变， 否则构造出来 -z   x * y =z
+// z * x = y
 Vector crossVector(Vector* v1, Vector* v2) {
     Vector v = { v1->y * v2->z - v2->y * v1->z,
                 v1->z * v2->x - v2->z * v1->x,

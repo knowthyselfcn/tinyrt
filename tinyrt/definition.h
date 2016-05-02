@@ -4,8 +4,6 @@
 
 static const double epsilon = 0.000000000000001;
 
-
-
 typedef struct {
 	double  x;
 	double 	y;
@@ -37,6 +35,7 @@ typedef struct {
 	Color color;
 } Plane;		// 无限宽广的平面, 且只是与象平面平行
 
+// 仔细选择p， v1, v2 需保证rect 法向对外
 typedef struct {
 	Point p;  //
 	Vector v1;

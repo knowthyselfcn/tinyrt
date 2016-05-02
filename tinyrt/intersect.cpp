@@ -1,3 +1,5 @@
+#define _USE_MATH_DEFINES
+
 #include "intersect.h"
 
 
@@ -81,14 +83,43 @@ bool intersectPlane(Ray* ray, Plane* plane, Intersect* intersect)
 
 bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
 {
+    bool intersected = false;
+    // 平行否
+    Vector rectNormalDir = crossVector(&rect->v1, &rect->v2); //法向是唯一的，按逆时针方向
+    double cos_beta = scalarProduct(&ray->direction, &rectNormalDir) / vectorLength(ray->direction) / vectorLength(rectNormalDir);
+    if (abs(cos_beta - M_PI_4) < epsilon)  {  // 与法相垂直， 什么都看不到
+         // false;
+    }
+    else {
+        if (cos_beta > M_PI_4) {
+            //
+            Vector ep = pointDifference(rect->p, ray->origin);  // eye 与 平面已知点连线
+            double cos_theta = scalarProduct(&ray->direction, &ep) / vectorLength(ray->direction) / vectorLength(ep);
+            double h = vectorLength(ep) * cos_theta;
+           
+            double l = h / cos_beta;   // z 为直线穿过平面点， l 为 ez 长度
+            Vector rayNormal = normalize(&ray->direction);
+            Vector ez = scalarVector(&rayNormal, l);
+            Point z = pointAdd(ray->origin, ez);
 
-    return false;
+            intersect->point = z;
+            intersected = true;
+        }
+        else {
+            // 方向不对，内侧相交，不考虑
+        }
+    }
+
+
+    return intersected;
 }
 
 
 // 类似于包围盒相交测试
 bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
 {
+    bool intersected = false;
+
     // 构造六个面
     Rectangle *rectangles = cuboid->rects;
     // 取对角点， 两点各自对应三个面0,3,5,     1,2,4
@@ -100,12 +131,17 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
     Vector wVec = cuboid->wVector;
     Vector hVec = cuboid->hVector;
 
-    rectangles[0] = { p, wVec, hVec };
-    rectangles[1] = { pp, hVec, yVec };
-    rectangles[2] = { pp, wVec, hVec };
-    rectangles[3] = { p, hVec, yVec };
-    rectangles[4] = { pp, wVec, yVec };
-    rectangles[5] = { p, wVec, yVec };
+    Vector rwVec = { -wVec.x, -wVec.y, -wVec.z};
+    Vector rhVec = { -hVec.x, -hVec.y, -hVec.z};
+    Vector ryVec = { -yVec.x, -yVec.y, -yVec.z};
+
+    // 逆时针方向，即可判断
+    rectangles[0] = { p,  wVec,  hVec };  // 
+    rectangles[1] = { pp, ryVec, rhVec, };
+    rectangles[2] = { pp, rhVec, rwVec, };
+    rectangles[3] = { p,  hVec,  yVec, };
+    rectangles[4] = { pp, rwVec, ryVec, };
+    rectangles[5] = { p,  yVec,  wVec, };
 
     Point center;
 
@@ -115,17 +151,14 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
     {
         Rectangle* rect = &rectangles[i];
         // 必须判断外侧相交，而不是内侧
-        bool intersected = intersectRect(ray, rect, intersect);
+        intersected = intersectRect(ray, rect, intersect);
         if (intersected) {
-
+            rectIdx = i;
         }
         else {
 
         }
     }
 
-
-
-
-    return false;
+    return intersected;
 }

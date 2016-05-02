@@ -55,12 +55,38 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Vector* light)
 
 
 
-
+// 需要考虑可见面、eye 是否在光源同一侧
+// 还原到简单的
+/*
+                |
+    B`.         |           .B
+                |
+                |
+                |
+                |
+ A.             |
+                |
+                |
+                |
+                |
+                .C
+                |
+*/
 Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect,   Vector* light)
 {
-    Color color = { 255, 0, 0 };
+    Color color = { 0, 0, 255 };
 
 
+    Vector directionToLight = pointDifference(*light, intersect->point);
+
+    double length = vectorLength(directionToLight);
+
+    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+
+    color = { 255, 0, 0 };      //intersect.plane->color;
+    color.x *= scale;				// 模拟光源光衰减
+    color.y *= scale;
+    color.z *= scale;
 
     return color;
 }

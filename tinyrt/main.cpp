@@ -1,7 +1,5 @@
 #include "definition.h"
-#include "cuboid.h"
 #include "intersect.h"
-//#include "sphere.h"
 #include "shade.h"
 
 #include "bmp.h"
@@ -130,6 +128,8 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
         }
         curr = curr->next;
     }
+
+    // TODO release List mem
     
     return intersection;
 }
@@ -286,7 +286,7 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz Æ½Ãæ
     Sphere sphere = {0, 0.5, 0,      0.5 };
-    Cuboid cuboid = { 1, 1, 0, 2, 1, 1, 2, 1, -1,  1.414213562373 };
+    Cuboid cuboid = { 1, 1, 0, 2, 1, 1, 2, 1, -1,  1.414213562373 };   // obj3
 
     Object obj1;
     obj1.type = PLANE;
@@ -294,6 +294,9 @@ int main(int argc, char* argv[]) {
     Object obj2;
     obj2.type = SPHERE;
     obj2.o = (void*)& sphere;
+    Object obj3;
+    obj3.type = CUBOID;
+    obj3.o = (void*)& cuboid;
 
     Object* objs[] = { &obj1, &obj2 };  // 
 
