@@ -24,8 +24,8 @@ bool intersectSphere(Ray* ray, Sphere* sphere, Intersect* intersect)
         double t = -(b + e) / (a * 2.0);
         if (t >= 0) {
             //double tmin = t;
-
-            Vector normal = scalarVector(&vectorAdd(temp, scalarVector(&rayDir, t)), sphere->radius);
+            //Vector ttttt = vectorAdd(temp, scalarVector(&rayDir, t));
+            //Vector normal = scalarVector(&, sphere->radius);
             intersect->point = pointAdd(ray->origin, scalarVector(&rayDir, t));
         }
         intersected = true;
@@ -124,7 +124,9 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
     Rectangle *rectangles = cuboid->rects;
     // 取对角点， 两点各自对应三个面0,3,5,     1,2,4
     Point p = cuboid->p;
-    Vector yVec = scalarVector(&normalize(&crossVector(&cuboid->wVector, &cuboid->hVector)), cuboid->yLenth);
+    Vector tmpYDir = crossVector(&cuboid->wVector, &cuboid->hVector);
+    Vector normaledY = normalize(&tmpYDir);
+    Vector yVec = scalarVector(&normaledY, cuboid->yLenth);
     Vector tmpVec = vectorAdd(vectorAdd(cuboid->wVector, cuboid->hVector), yVec);   // 对角向量
     Point pp = pointAdd(p, tmpVec);
 
