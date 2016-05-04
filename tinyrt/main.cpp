@@ -24,7 +24,7 @@ const static int height = 480  ;
 // x,y 是像素坐标, 一个像素0.1cm，故view plane 宽64cm， 类似于25寸屏幕
 Ray getRay(int x, int y ) {  
 
-    Point eye = {0, 10, 20}; 
+    Point eye = {0, 20, 20}; 
 
     Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
     Vector lookAt = { 0, 0, 0 };  //眼睛向前的方向  
@@ -42,9 +42,9 @@ Ray getRay(int x, int y ) {
     Vector tmpV = crossVector(&w, &u);
     Vector v = normalize(&tmpV);
     
-    Vector rup = localToWorld(&up, &u, &v, &r.origin);
+    Vector rup = localToWorld(&up, &u, &v, &r.origin); //
 
-    Vector rw = {-w.x, -w.y, -w.z};
+    Vector  rw = {-w.x, -w.y, -w.z};
 
     Vector a = scalarVector(&rw, distance);
     
@@ -88,10 +88,15 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
             break;
         case CUBOID:
             intersected = intersectCuboid(ray, (Cuboid*)obj->o, &intersection);
+            break;
+        case RECTANGLE:
+            intersected = intersectRect(ray, (Rectangle*)obj->o, &intersection);
+            break;
         default:
             break;
         }
 
+        // 标记
         if (intersected){
             curr = (List*)malloc(sizeof(List));
             intersection.objectId = i;
@@ -113,7 +118,6 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
     // 需要根据向量长度判断哪个最近
     double minLength = DBL_MAX;
     curr = list;
-
 
     if (ray->px == width / 2 && ray->py == height / 2)
         int pppp = width;
@@ -165,6 +169,10 @@ Color traceRay(Ray* ray, Object *objs[], int num)
                 break;
             case CUBOID:
                 color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &light);
+                break;
+            case  RECTANGLE:
+                color = shade_Rectange(ray, (Rectangle*)obj->o, &intersection, &light);
+                break;
             default:
                 break;
             }
@@ -288,8 +296,36 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 
 int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
-    Sphere sphere = {0, 0.5, 0,      0.5 };
-    Cuboid cuboid = { 1, 1, 0, 2, 1, 1, 2, 1, -1,  1.414213562373 };   // obj3
+    Sphere sphere = {0, 0.5, 0,      1 };
+    
+    Cuboid cuboid = { 1, 0, 0,  1, 0, -1,    1, 0, 1,  1.414213562373 };   // obj3
+    Point p = cuboid.p;
+    Vector tmpYDir = crossVector(&cuboid.hVector, &cuboid.wVector);
+    Vector normaledY = normalize(&tmpYDir);
+    Vector yVec = scalarVector(&normaledY, cuboid.yLenth);
+    Vector tmpVec = vectorAdd(vectorAdd(cuboid.wVector, cuboid.hVector), yVec);   // 对角向量
+    Point pp = pointAdd(p, tmpVec);
+    Vector wVec = cuboid.wVector;
+    Vector hVec = cuboid.hVector;
+    // 取对角点， 两点各自对应三个面0,3,5,     1,2,4
+    Vector rwVec = { -wVec.x, -wVec.y, -wVec.z };
+    Vector rhVec = { -hVec.x, -hVec.y, -hVec.z };
+    Vector ryVec = { -yVec.x, -yVec.y, -yVec.z };
+
+    // 逆时针方向，即可判断
+    cuboid.rectangles[0] = { p,  wVec,  hVec };  // 
+    cuboid.rectangles[1] = { p,  yVec,  wVec, };
+    cuboid.rectangles[2] = { pp, rhVec, rwVec, };
+    cuboid.rectangles[3] = { pp, rwVec, ryVec, };
+    cuboid.rectangles[4] = { pp, ryVec, rhVec, };
+    cuboid.rectangles[5] = { p,  hVec,  yVec, };
+
+    Rectangle rect = cuboid.rectangles[3];
+    rect.p = vectorAdd(rect.p, hVec);
+
+    //cuboid.rectangles[3] = { vectorAdd(rect.p, hVec), rwVec, ryVec };
+
+    rect = {-1, 0, 0, 2,0,0,  0,2,0, };
 
     Object obj1;
     obj1.type = PLANE;
@@ -300,8 +336,11 @@ int main(int argc, char* argv[]) {
     Object obj3;
     obj3.type = CUBOID;
     obj3.o = (void*)& cuboid;
+    Object obj4;
+    obj4.type = RECTANGLE;
+    obj4.o = (void*)& rect;
 
-    Object* objs[] = { &obj1, &obj2 };  // 
+    Object* objs[] = { &obj2, &obj3,   };  // &obj1,   &obj4
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;

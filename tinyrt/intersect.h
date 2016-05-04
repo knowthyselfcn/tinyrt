@@ -14,6 +14,6 @@ bool intersectPlane(Ray* ray, Plane* plane, Intersect* intersect);
 
 bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect);
 
-
+bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect);
 
 #endif

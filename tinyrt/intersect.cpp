@@ -80,34 +80,103 @@ bool intersectPlane(Ray* ray, Plane* plane, Intersect* intersect)
     return intersected;
 }
 
+//
+bool pointInRectangle(Point* z, Rectangle* rect)
+{
+    bool in = false;
+
+    Vector v3 = vectorAdd(rect->v1, rect->v2);  // 对角向量
+
+    Vector pz = pointDifference(*z, rect->p);
+    double lpz = vectorLength(pz);
+
+    double cos_beta = scalarProduct(&v3, &rect->v1) / vectorLength(v3) / vectorLength(rect->v1);
+    double beta = acos(cos_beta);   //
+
+    double lv1 = vectorLength(rect->v1);  // length of v1
+    double lv2 = vectorLength(rect->v2);  // length of v2
+
+    double cos_theta = scalarProduct(&pz, &rect->v1) / vectorLength(pz) / vectorLength(rect->v1);
+    double cos_tt = scalarProduct(&pz, &rect->v2) / vectorLength(pz) / vectorLength(rect->v2);
+    double theta = acos(cos_theta);
+    if (cos_theta > 0 && 0 < theta && theta < M_PI_2 &&  cos_tt > 0) { // &&
+        if (theta <= beta) {
+            double lpzp = lv1 / cos_theta; // length of pz`   z` 为 pz直线与 v2` 的交点
+            if (lpz <= lpzp) {
+                in = true;
+
+                if (z->y < 0)
+                    int jjjjj = 10;
+            }
+            else {
+                // 在外部
+            }
+        } 
+        else if (cos_theta >0 && theta < M_PI_2) {  //上三角部分的判断  
+            double complementary_theta = M_PI_2 - theta;
+            //double cos_complementary_theta = scalarProduct(&pz, &rect->v2) / vectorLength(pz) / vectorLength(rect->v2);
+            //double lpzp = lv2 / cos_complementary_theta;
+            double lpzp = lv2 / cos(complementary_theta);
+            if (lpz <= lpzp) {
+                in = true;
+            }
+            else {
+                // 在外部
+            }
+        }
+        else {
+            int jjjjjjjj = 99;
+        }
+    }
+    else {
+        // 根本不在一个象限内，
+    }
+
+    return in;
+}
+
 
 bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
 {
     bool intersected = false;
     // 平行否
     Vector rectNormalDir = crossVector(&rect->v1, &rect->v2); //法向是唯一的，按逆时针方向
-    double cos_beta = scalarProduct(&ray->direction, &rectNormalDir) / vectorLength(ray->direction) / vectorLength(rectNormalDir);
-    if (abs(cos_beta - M_PI_4) < epsilon)  {  // 与法相垂直， 什么都看不到
-         // false;
-    }
-    else {
-        if (cos_beta > M_PI_4) {
-            //
-            Vector ep = pointDifference(rect->p, ray->origin);  // eye 与 平面已知点连线
-            double cos_theta = scalarProduct(&ray->direction, &ep) / vectorLength(ray->direction) / vectorLength(ep);
-            double h = vectorLength(ep) * cos_theta;
-           
-            double l = h / cos_beta;   // z 为直线穿过平面点， l 为 ez 长度
+    Vector rectNormal = normalize(&rectNormalDir);
+    Vector rnormal = { -rectNormal.x, -rectNormal.y, -rectNormal.z };
+    double  cos_theta = scalarProduct(&ray->direction, &rnormal)
+        / vectorLength(ray->direction) / vectorLength(rnormal);
+   // printf("%f\n", cos_theta);
+    //double theta = acos(cos_theta);
+
+    if (cos_theta > 0 )  {  // theta < M_PI_2
+        Vector ep = pointDifference(rect->p, ray->origin);  // eye 与 平面已知点p 连线
+        // 投影线 与 已知固定点线 的夹角，求出 ee` （垂直投影线h）
+        double cos_beta = scalarProduct(&ep, &rnormal) / vectorLength(ep) / vectorLength(rnormal);
+        //double beta = acos(cos_beta);
+        if (cos_beta > 0) { //beta < M_PI_2
+            double h = vectorLength(ep) * cos_beta;
+            double l = h / cos_theta;   // z 为直线穿过平面点， l 为 ez 长度
             Vector rayNormal = normalize(&ray->direction);
             Vector ez = scalarVector(&rayNormal, l);
             Point z = pointAdd(ray->origin, ez);
+            //printf("%f\t%f\n", h, l);
+            bool in = pointInRectangle(&z, rect);
+            if (in) {
+                intersect->point = z;
+                intersected = true;
+            }
+            else {
 
-            intersect->point = z;
-            intersected = true;
+            }
         }
         else {
             // 方向不对，内侧相交，不考虑
+            int i = 3;
         }
+    }
+    else {
+        // 与法相垂直， 什么都看不到  abs(theta - M_PI) < epsilon
+        // > M_PI_2 内侧相交
     }
 
 
@@ -121,41 +190,21 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
     bool intersected = false;
 
     // 构造六个面
-    Rectangle *rectangles = cuboid->rects;
-    // 取对角点， 两点各自对应三个面0,3,5,     1,2,4
-    Point p = cuboid->p;
-    Vector tmpYDir = crossVector(&cuboid->wVector, &cuboid->hVector);
-    Vector normaledY = normalize(&tmpYDir);
-    Vector yVec = scalarVector(&normaledY, cuboid->yLenth);
-    Vector tmpVec = vectorAdd(vectorAdd(cuboid->wVector, cuboid->hVector), yVec);   // 对角向量
-    Point pp = pointAdd(p, tmpVec);
+    Rectangle *rectangles = cuboid->rectangles;
 
-    Vector wVec = cuboid->wVector;
-    Vector hVec = cuboid->hVector;
-
-    Vector rwVec = { -wVec.x, -wVec.y, -wVec.z};
-    Vector rhVec = { -hVec.x, -hVec.y, -hVec.z};
-    Vector ryVec = { -yVec.x, -yVec.y, -yVec.z};
-
-    // 逆时针方向，即可判断
-    rectangles[0] = { p,  wVec,  hVec };  // 
-    rectangles[1] = { pp, ryVec, rhVec, };
-    rectangles[2] = { pp, rhVec, rwVec, };
-    rectangles[3] = { p,  hVec,  yVec, };
-    rectangles[4] = { pp, rwVec, ryVec, };
-    rectangles[5] = { p,  yVec,  wVec, };
 
     Point center;
 
     // 遍历六个面
-    int rectIdx = -1;
+    //int rectIdx = -1;
     for (int i = 0; i < 6; i++)
     {
         Rectangle* rect = &rectangles[i];
         // 必须判断外侧相交，而不是内侧
         intersected = intersectRect(ray, rect, intersect);
         if (intersected) {
-            rectIdx = i;
+            intersect->rectIdx = i;
+            break;
         }
         else {
 

@@ -58,6 +58,7 @@ typedef struct {
 typedef struct {
     Point point;
     int objectId;   // index from 0 in  Object[],  if -1, means no intersect
+    int rectIdx;    // 为了box 的调试
 } Intersect;
 
 // 只需要指定底部的长宽，剩下的类似y轴，只指定长度即可，
@@ -68,7 +69,7 @@ typedef struct {
     Vector hVector;   // z
     double yLenth;      // y
 
-    Rectangle rects[6];
+    Rectangle rectangles[6];
 } Cuboid;
 
 
