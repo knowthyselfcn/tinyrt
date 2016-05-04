@@ -16,4 +16,17 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect);
 
 bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect);
 
+
+bool intersectTriangle(Ray* ray, Triangle* triangle, Intersect* intersect);
+
+
+
+
+
+
+
+
+
+
+
 #endif

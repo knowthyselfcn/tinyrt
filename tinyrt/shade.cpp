@@ -118,8 +118,34 @@ Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect,   Vector* lig
 
 Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Vector* light)
 {
-    Color color = { 0, 0, 255 };
+    Color color = { 0, 0, 200 };
+    Vector directionToLight = pointDifference(*light, intersect->point);
 
+    double length = vectorLength(directionToLight);
+
+    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+    //printf("%f\n", scale);
+    color.x *= scale;				// 模拟光源光衰减
+    color.y *= scale;
+    color.z *= scale;
+
+
+    return color;
+}
+
+
+Color shade_Triangle(Ray* ray, Triangle* triangle, Intersect* intersect, Vector* light)
+{
+    Color color = { 0, 0, 200 };
+    Vector directionToLight = pointDifference(*light, intersect->point);
+
+    double length = vectorLength(directionToLight);
+
+    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+    //printf("%f\n", scale);
+    color.x *= scale;				// 模拟光源光衰减
+    color.y *= scale;
+    color.z *= scale;
 
 
     return color;

@@ -92,7 +92,11 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
         case RECTANGLE:
             intersected = intersectRect(ray, (Rectangle*)obj->o, &intersection);
             break;
+        case TRIANGLE:
+            intersected = intersectTriangle(ray, (Triangle*)obj->o, &intersection);
+            break;
         default:
+            std::cout << "obj not checked intersection, bad logic" << std::endl;
             break;
         }
 
@@ -172,6 +176,9 @@ Color traceRay(Ray* ray, Object *objs[], int num)
                 break;
             case  RECTANGLE:
                 color = shade_Rectange(ray, (Rectangle*)obj->o, &intersection, &light);
+                break;
+            case  TRIANGLE:
+                color = shade_Triangle(ray, (Triangle*)obj->o, &intersection, &light);
                 break;
             default:
                 break;
@@ -320,27 +327,16 @@ int main(int argc, char* argv[]) {
     cuboid.rectangles[4] = { pp, ryVec, rhVec, };
     cuboid.rectangles[5] = { p,  hVec,  yVec, };
 
-    Rectangle rect = cuboid.rectangles[3];
-    rect.p = vectorAdd(rect.p, hVec);
+    Rectangle rect = { -3, 0.5, 5,  1.5, 0, 0,      0, 1, -1, };
+    Triangle triangle = { 0, 0.5, 5, 1.5, 0, 0, 0, 1, -1, };
 
-    //cuboid.rectangles[3] = { vectorAdd(rect.p, hVec), rwVec, ryVec };
+    Object obj1 = { PLANE, (void*)&basePlane };
+    Object obj2 = { SPHERE, (void*)& sphere };
+    Object obj3 = { CUBOID, (void*)& cuboid };
+    Object obj4 = { RECTANGLE, (void*)& rect };
+    Object obj5 = { TRIANGLE, (void*)& triangle };
 
-    rect = {-1, 0, 0, 2,0,0,  0,2,0, };
-
-    Object obj1;
-    obj1.type = PLANE;
-    obj1.o = (void*)&basePlane;
-    Object obj2;
-    obj2.type = SPHERE;
-    obj2.o = (void*)& sphere;
-    Object obj3;
-    obj3.type = CUBOID;
-    obj3.o = (void*)& cuboid;
-    Object obj4;
-    obj4.type = RECTANGLE;
-    obj4.o = (void*)& rect;
-
-    Object* objs[] = { &obj1, &obj2, &obj3, };  //  &obj4
+    Object* objs[] = {  &obj5};  //   &obj1, &obj2, &obj3, &obj4,
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;

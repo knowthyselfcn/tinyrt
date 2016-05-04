@@ -43,6 +43,12 @@ typedef struct {
 } Rectangle;
 
 typedef struct {
+    Point p;
+    Vector v1;
+    Vector v2;
+} Triangle;
+
+typedef struct {
 	Point center;
 	double radius;
 } Sphere;

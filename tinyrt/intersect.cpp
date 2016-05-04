@@ -106,7 +106,7 @@ bool pointInRectangle(Point* z, Rectangle* rect)
                 in = true;
 
                 if (z->y < 0)
-                    int jjjjj = 10;
+                    int jjjjj = 10;  // FIXME
             }
             else {
                 // 在外部
@@ -125,7 +125,7 @@ bool pointInRectangle(Point* z, Rectangle* rect)
             }
         }
         else {
-            int jjjjjjjj = 99;
+            int jjjjjjjj = 99;   // FIXME
         }
     }
     else {
@@ -184,6 +184,99 @@ bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
 }
 
 
+// 判断是否在v1，v2 夹角 cos_beta 内
+bool pointInTriangle(Point* z, Triangle* triangle)
+{
+    bool in = false;
+
+    Vector rv1 = { -triangle->v1.x, -triangle->v1.y, -triangle->v1.z};
+    Vector v3 = vectorAdd(rv1, triangle->v2);  // 以v1 终点为起点的 第三条边
+    double cos_gamma = scalarProduct(&v3, &triangle->v1) / vectorLength(v3) / vectorLength(triangle->v1);
+    double gamma = acos(cos_gamma);
+
+    Vector pz = pointDifference(*z, triangle->p);
+    double lpz = vectorLength(pz);
+
+    double cos_beta = scalarProduct(&triangle->v2, &triangle->v1) / vectorLength(triangle->v2) / vectorLength(triangle->v1);
+    double beta = acos(cos_beta);   //
+
+    double lv1 = vectorLength(triangle->v1);  // length of v1
+    double lv2 = vectorLength(triangle->v2);  // length of v2
+
+    // theta pz 与 v1 夹角，   tt  pz 与 v2 夹角
+    double cos_theta = scalarProduct(&pz, &triangle->v1) / vectorLength(pz) / vectorLength(triangle->v1);
+    double cos_tt = scalarProduct(&pz, &triangle->v2) / vectorLength(pz) / vectorLength(triangle->v2);
+    double theta = acos(cos_theta);
+    if (cos_theta > 0 && cos_tt > 0 && 0 < theta && theta < beta && acos(cos_tt) < beta  &&  gamma < M_PI_2) { //  
+        // length of pz`   z` 为 pz直线与 v3 的交点
+        double h = lv1 * tan(theta) * tan(gamma) / (tan(theta) + tan(gamma));
+        if (theta > M_PI_2 ||  gamma > M_PI_2    )
+            int i = 9;
+        //printf("%f\n", h);
+        double lpzp = h / sin(theta);
+        if (lpz <= lpzp) {
+            in = true;
+        }
+        else {
+            // 在外部
+        }
+    }
+    else {
+        // 根本不在一个象限内，
+    }
+
+    return in;
+}
+
+bool intersectTriangle(Ray* ray, Triangle* triangle, Intersect* intersect)
+{
+    bool intersected = false;
+    // 平行否
+    Vector rectNormalDir = crossVector(&triangle->v1, &triangle->v2); //法向是唯一的，按逆时针方向
+    Vector rectNormal = normalize(&rectNormalDir);
+    Vector rnormal = { -rectNormal.x, -rectNormal.y, -rectNormal.z };
+    double  cos_theta = scalarProduct(&ray->direction, &rnormal)
+        / vectorLength(ray->direction) / vectorLength(rnormal);
+    // printf("%f\n", cos_theta);
+    //double theta = acos(cos_theta);
+
+    if (cos_theta > 0)  {  // theta < M_PI_2
+        Vector ep = pointDifference(triangle->p, ray->origin);  // eye 与 平面已知点p 连线
+        // 投影线 与 已知固定点线 的夹角，求出 ee` （垂直投影线h）
+        double cos_beta = scalarProduct(&ep, &rnormal) / vectorLength(ep) / vectorLength(rnormal);
+        //double beta = acos(cos_beta);
+        if (cos_beta > 0) { //beta < M_PI_2
+            double h = vectorLength(ep) * cos_beta;
+            double l = h / cos_theta;   // z 为直线穿过平面点， l 为 ez 长度
+            Vector rayNormal = normalize(&ray->direction);
+            Vector ez = scalarVector(&rayNormal, l);
+            Point z = pointAdd(ray->origin, ez);
+            //printf("%f\t%f\n", h, l);
+            bool in = pointInTriangle(&z, triangle);
+            if (in) {
+                intersect->point = z;
+                intersected = true;
+            }
+            else {
+
+            }
+        }
+        else {
+            // 方向不对，内侧相交，不考虑
+            int i = 3;
+        }
+    }
+    else {
+        // 与法相垂直， 什么都看不到  abs(theta - M_PI) < epsilon
+        // > M_PI_2 内侧相交
+    }
+
+
+    return intersected;
+}
+
+
+
 // 类似于包围盒相交测试
 bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
 {
@@ -191,9 +284,6 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
 
     // 构造六个面
     Rectangle *rectangles = cuboid->rectangles;
-
-
-    Point center;
 
     // 遍历六个面
     //int rectIdx = -1;

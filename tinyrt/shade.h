@@ -16,4 +16,14 @@ Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect,  Vector* ligh
 
 Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Vector* light);
 
+Color shade_Triangle(Ray* ray, Triangle* triangle, Intersect* intersect, Vector* light);
+
+
+
+
+
+
+
+
+
 #endif
