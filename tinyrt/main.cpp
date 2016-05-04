@@ -24,7 +24,7 @@ const static int height = 480  ;
 // x,y 是像素坐标, 一个像素0.1cm，故view plane 宽64cm， 类似于25寸屏幕
 Ray getRay(int x, int y ) {  
 
-    Point eye = {0, 20, 20}; 
+    Point eye = {0, 5, 30}; 
 
     Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
     Vector lookAt = { 0, 0, 0 };  //眼睛向前的方向  
@@ -340,7 +340,7 @@ int main(int argc, char* argv[]) {
     obj4.type = RECTANGLE;
     obj4.o = (void*)& rect;
 
-    Object* objs[] = { &obj2, &obj3,   };  // &obj1,   &obj4
+    Object* objs[] = { &obj1, &obj2, &obj3, };  //  &obj4
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;
