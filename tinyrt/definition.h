@@ -54,11 +54,18 @@ typedef struct {
 } Sphere;
 
 
-//typedef struct {
-//	Point point;
-//	//double lambda;
-//	//Plane* plane;
-//} Intersection;
+typedef struct {
+    Vector u;
+    Vector v;
+    Vector w;
+
+    double height;  // view plane
+    double width;
+
+    Vector eye2Center;
+
+    Point eye;
+} EyeSpace;
 
 
 typedef struct {
@@ -115,5 +122,41 @@ typedef struct _List{
     Intersect intersect ;
     struct _List* next ;
 } List;
+
+
+enum LIGHTTYPE
+{
+    POINT_LIGHT,
+    DIRECTION_LIGHT,
+    ENV_LIGHT,
+};
+
+
+typedef struct {
+    Vector pos;
+    Vector color;
+} PointLight;
+
+typedef struct {
+    Vector dir;
+    Vector color;
+} DirectionLight;
+
+typedef struct {
+    Color color;
+} Env_light;
+
+typedef struct {
+    void *light;
+    LIGHTTYPE type;
+} Light;
+
+typedef struct {
+    Light data[64];  // 最多支持64 个光源
+    int size;       
+} Lights;
+
+
+
 
 #endif 

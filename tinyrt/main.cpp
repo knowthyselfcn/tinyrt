@@ -10,9 +10,29 @@
 
 #include <iostream>
 
-Point light = { 0, 5, 0 };		// 点光源的位置
+//Point light = { 0, 5, 0 };		// 点光源的位置
                          // 世界坐标系
 
+Lights lights; // 光源集合
+
+
+
+void initLights()
+{
+    // 正上方的点光源
+    PointLight pointLight = { 0, 5, 0,  255, 0,0};
+    add_PointLight(&lights, pointLight);
+
+    //DirectionLight dLight = {0,-1,0,    0,128, 0}; // 半绿色
+    //add_DirectiontLight(&lights, dLight);
+
+    int i = 23;
+}
+
+bool destroyLights()
+{
+    return false;
+}
 
 
 double distance =  1.5; //  眼睛与视窗的距离
@@ -22,41 +42,45 @@ const static int height = 480  ;
 // view plane  的指定方式： eye space中 －z 垂直通过view plane
 // view plane 的宽边与eye space y 轴（up）平行
 // x,y 是像素坐标, 一个像素0.1cm，故view plane 宽64cm， 类似于25寸屏幕
-Ray getRay(int x, int y ) {  
+EyeSpace eyeSpace;
 
-    Point eye = {0, 5, 30}; 
-
+bool initEyeSpace()
+{
+    eyeSpace.eye = { 0, 5, 50 };
     Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
     Vector lookAt = { 0, 0, 0 };  //眼睛向前的方向  
-
     //up = {0, 0, -1};   // 向地面俯视
     //lookAt = {0, -10, 0};
 
+    Vector tmpW = pointDifference(eyeSpace.eye, lookAt);
+    eyeSpace.w = normalize(&tmpW);
+    Vector tmpU = crossVector(&up, &eyeSpace.w);
+    eyeSpace.u = normalize(&tmpU);
+    Vector tmpV = crossVector(&eyeSpace.w, &eyeSpace.u);
+    eyeSpace.v = normalize(&tmpV);
+
+    //Vector rup = localToWorld(&up, &u, &v, &r.origin); //
+
+    Vector  rw = { -eyeSpace.w.x, -eyeSpace.w.y, -eyeSpace.w.z };
+    eyeSpace.eye2Center = scalarVector(&rw, distance); //eye 到 view plane 中心的向量
+    eyeSpace.height = ((double)height) / 1000;
+    eyeSpace.width = ((double)width) / 1000;
+
+    return true;
+}
+
+Ray getRay(int x, int y ) {  
+ 
     Ray r;
-    r.origin = eye;         // 设定眼睛的位置
+    r.origin = eyeSpace.eye;         // 设定眼睛的位置
 
-    Vector tmpW = pointDifference(eye, lookAt);
-    Vector w = normalize( &tmpW ) ;
-    Vector tmpU = crossVector(&up, &w);
-    Vector u = normalize(&tmpU);
-    Vector tmpV = crossVector(&w, &u);
-    Vector v = normalize(&tmpV);
-    
-    Vector rup = localToWorld(&up, &u, &v, &r.origin); //
 
-    Vector  rw = {-w.x, -w.y, -w.z};
+    Vector b = scalarVector(&eyeSpace.v, eyeSpace.height / 2 - ((double)y)/1000);
 
-    Vector a = scalarVector(&rw, distance);
-    
-    double viewPlaneHeight = ((double)height) / 1000;
-    Vector b = scalarVector(&v, viewPlaneHeight / 2 - ((double)y)/1000);
-    
-    double viewPlaneWidth = ((double)width) / 1000;
-    Vector c = scalarVector(&u, - viewPlaneWidth / 2 + ((double)x) / 1000);
+    Vector c = scalarVector(&eyeSpace.u, -eyeSpace.width / 2 + ((double)x) / 1000);
 
-    r.direction = vectorAdd(a, vectorAdd(b,  c));   //
+    r.direction = vectorAdd(eyeSpace.eye2Center, vectorAdd(b,  c));   //
 
-    //std::cout << vectorLength(r.direction) << "\t" << r.direction.x << "\t" << r.direction.y << "\t" << r.direction.z << std::endl;
     r.viewPlanePos = pointAdd(r.origin, r.direction);
 
     r.px = x; r.py = y; // for debug
@@ -140,6 +164,12 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
     }
 
     // TODO release List mem
+    curr = list;  
+    while (curr) {
+        List* next = curr->next;
+        free((void*)curr);
+        curr = next;
+    }
     
     return intersection;
 }
@@ -166,19 +196,19 @@ Color traceRay(Ray* ray, Object *objs[], int num)
             switch (obj->type)    
             {
             case SPHERE:
-                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &light);
+                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &lights);
                 break;
             case PLANE:
-                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &light);
+                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &lights);
                 break;
             case CUBOID:
-                color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &light);
+                color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &lights);
                 break;
             case  RECTANGLE:
-                color = shade_Rectange(ray, (Rectangle*)obj->o, &intersection, &light);
+                color = shade_Rectange(ray, (Rectangle*)obj->o, &intersection, &lights);
                 break;
             case  TRIANGLE:
-                color = shade_Triangle(ray, (Triangle*)obj->o, &intersection, &light);
+                color = shade_Triangle(ray, (Triangle*)obj->o, &intersection, &lights);
                 break;
             default:
                 break;
@@ -223,7 +253,10 @@ Color traceRay_Sphere(Ray* ray, Sphere* sphere)
             Vector normal = scalarVector(&ttttttttt, sphere->radius);
             intersection.point = pointAdd(ray->origin, scalarVector(&rayDir, t));
             
-            Vector rayToLigthVector = pointDifference(light, intersection.point);
+            Vector* light = (Vector*)(lights.data[0].light);
+            
+
+            Vector rayToLigthVector = pointDifference(*light, intersection.point);
             Ray rayToLight;
             rayToLight.origin = intersection.point;
             rayToLight.direction = rayToLigthVector;
@@ -284,8 +317,8 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 
         Intersect intersect  ;
         intersect.point = z;
-
-        Vector directionToLight = pointDifference(light, intersect.point);
+        Vector* light = (Vector*)lights.data[0].light;
+        Vector directionToLight = pointDifference(*light, intersect.point);
 
         double length = vectorLength(directionToLight);
 
@@ -302,6 +335,9 @@ Color traceRay_Plane(Ray* ray, Plane* plane) {
 
 
 int main(int argc, char* argv[]) {
+    initEyeSpace();
+    initLights();
+
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
     Sphere sphere = {0, 0.5, 0,      1 };
     
@@ -328,7 +364,7 @@ int main(int argc, char* argv[]) {
     cuboid.rectangles[5] = { p,  hVec,  yVec, };
 
     Rectangle rect = { -3, 0.5, 5,  1.5, 0, 0,      0, 1, -1, };
-    Triangle triangle = { 1, 0.5, 0, 1.5, 0, 0, 0, 1, -1, };
+    Triangle triangle = { 4, 0.5, 0, 1.5, 0, 0, 0, 1, -1, };
 
     Object obj1 = { PLANE, (void*)&basePlane };
     Object obj2 = { SPHERE, (void*)& sphere };
@@ -336,7 +372,7 @@ int main(int argc, char* argv[]) {
     Object obj4 = { RECTANGLE, (void*)& rect };
     Object obj5 = { TRIANGLE, (void*)& triangle };
 
-    Object* objs[] = { &obj2, &obj5 };  //   &obj1, &obj2, &obj3, &obj4,
+    Object* objs[] = { &obj1, &obj2, &obj3, &obj4, &obj5 };  //  
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;

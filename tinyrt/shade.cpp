@@ -1,9 +1,78 @@
 #include "shade.h"
+#include <stdlib.h>
 
 
-Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Vector* light)
+bool addLight(Lights* lights, Light light)
+{
+    bool ret = false;
+    if (lights->size <= 64){
+        lights->data[lights->size] = light;
+        lights->size++;
+
+        ret = true;
+    }
+    else {
+
+    }
+
+    return ret;
+}
+
+
+bool  add_PointLight(Lights* lights, PointLight light)
+{
+    bool ret = false;
+
+    Light pointLight;
+    pointLight.light = (void*)malloc(sizeof(PointLight));
+    pointLight.type = POINT_LIGHT;
+    *(PointLight *)pointLight.light = { light };
+
+    lights->data[lights->size] = pointLight;
+    lights->size++;
+
+    ret = addLight(lights, pointLight);
+    if (false == ret) {
+        free(pointLight.light);
+    }
+ 
+
+    return ret;
+}
+
+bool  remove_PointLight(Lights* lights, PointLight light)
+{
+
+    return false;
+}
+
+
+bool  add_DirectiontLight(Lights* lights, DirectionLight light)
+{
+    bool ret = false;
+ 
+    Light dirLight;
+    dirLight.light = (void*)malloc(sizeof(DirectionLight));
+    dirLight.type = DIRECTION_LIGHT;
+    *(DirectionLight *)dirLight.light = { light };
+
+    ret = addLight(lights, dirLight);
+    if (false == ret)
+    {
+        free(dirLight.light);
+    }
+ 
+    return ret;
+}
+
+
+
+
+Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights)
 {
     Color color = { 255, 0, 0 };
+
+    Vector* light = (Vector*)lights->data[0].light;
 
     Vector rayToLigthVector = pointDifference(*light, intersection->point);
     Ray rayToLight;
@@ -31,21 +100,20 @@ Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Vector* li
 
 
 
-Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Vector* light)
+Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights)
 {
-    Color color = { 255, 0, 0 };
+    Color color = { 255, 0, 0 };    // 最终计算出来的颜色
+    Vector* light = (Vector*)lights->data[0].light;
 
-    Vector directionToLight = pointDifference(*light, intersect->point);
+    for (int i = 0; i < lights->size; i++) {
+        Vector directionToLight = pointDifference(*light, intersect->point);
+        double length = vectorLength(directionToLight);
+        double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
 
-    double length = vectorLength(directionToLight);
-
-    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
-
-    color = { 255, 0, 0 };      //intersect.plane->color;
-    color.x *= scale;				// 模拟光源光衰减
-    color.y *= scale;
-    color.z *= scale;
-
+        color.x *= scale;				// 模拟光源光衰减
+        color.y *= scale;
+        color.z *= scale;
+    }
 
     return color;
 }
@@ -72,7 +140,7 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Vector* light)
                 .P
                 |
 */
-Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect,   Vector* light)
+Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect, Lights* lights)
 {
     Color color = { 0, 0, 255 };
 #ifdef DEBUG
@@ -101,7 +169,7 @@ Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect,   Vector* lig
     }
 #endif
 
-
+    Vector* light = (Vector*)lights->data[0].light;
     Vector directionToLight = pointDifference(*light, intersect->point);
 
     double length = vectorLength(directionToLight);
@@ -116,9 +184,10 @@ Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect,   Vector* lig
 }
 
 
-Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Vector* light)
+Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Lights* lights)
 {
     Color color = { 0, 0, 200 };
+    Vector* light = (Vector*)lights->data[0].light;
     Vector directionToLight = pointDifference(*light, intersect->point);
 
     double length = vectorLength(directionToLight);
@@ -134,9 +203,10 @@ Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Vector* 
 }
 
 
-Color shade_Triangle(Ray* ray, Triangle* triangle, Intersect* intersect, Vector* light)
+Color shade_Triangle(Ray* ray, Triangle* triangle, Intersect* intersect, Lights* lights)
 {
     Color color = { 0, 0, 200 };
+    Vector* light = (Vector*)lights->data[0].light;
     Vector directionToLight = pointDifference(*light, intersect->point);
 
     double length = vectorLength(directionToLight);
