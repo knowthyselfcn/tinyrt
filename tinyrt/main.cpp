@@ -328,7 +328,7 @@ int main(int argc, char* argv[]) {
     cuboid.rectangles[5] = { p,  hVec,  yVec, };
 
     Rectangle rect = { -3, 0.5, 5,  1.5, 0, 0,      0, 1, -1, };
-    Triangle triangle = { 0, 0.5, 5, 1.5, 0, 0, 0, 1, -1, };
+    Triangle triangle = { 1, 0.5, 0, 1.5, 0, 0, 0, 1, -1, };
 
     Object obj1 = { PLANE, (void*)&basePlane };
     Object obj2 = { SPHERE, (void*)& sphere };
@@ -336,7 +336,7 @@ int main(int argc, char* argv[]) {
     Object obj4 = { RECTANGLE, (void*)& rect };
     Object obj5 = { TRIANGLE, (void*)& triangle };
 
-    Object* objs[] = {  &obj5};  //   &obj1, &obj2, &obj3, &obj4,
+    Object* objs[] = { &obj2, &obj5 };  //   &obj1, &obj2, &obj3, &obj4,
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
 	int x, y;

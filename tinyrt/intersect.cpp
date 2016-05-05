@@ -182,35 +182,70 @@ bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
 
     return intersected;
 }
+/*
+Vector rv1 = { -triangle->v1.x, -triangle->v1.y, -triangle->v1.z};
+Vector v3 = vectorAdd(rv1, triangle->v2);  // 以v1 终点为起点的 第三条边
+double cos_gamma = scalarProduct(&v3, &triangle->v1) / vectorLength(v3) / vectorLength(triangle->v1);
+double gamma = acos(cos_gamma);
+
+Vector pz = pointDifference(*z, triangle->p);
+double lpz = vectorLength(pz);
+
+double cos_beta = scalarProduct(&triangle->v2, &triangle->v1) / vectorLength(triangle->v2) / vectorLength(triangle->v1);
+double beta = acos(cos_beta);   //
+
+double lv1 = vectorLength(triangle->v1);  // length of v1
+double lv2 = vectorLength(triangle->v2);  // length of v2
+
+// theta pz 与 v1 夹角，   tt  pz 与 v2 夹角
+double cos_theta = scalarProduct(&pz, &triangle->v1) / vectorLength(pz) / vectorLength(triangle->v1);
+double cos_tt = scalarProduct(&pz, &triangle->v2) / vectorLength(pz) / vectorLength(triangle->v2);
+double theta = acos(cos_theta);
+if (cos_theta > 0 && cos_tt > 0 && 0 < theta && theta < beta && acos(cos_tt) < beta  &&  gamma < M_PI_2) { //
+
+}
+else {
+    // 根本不在一个象限内，
+}
+*/
 
 
 // 判断是否在v1，v2 夹角 cos_beta 内
+// 参见 http://stackoverflow.com/questions/13640931/how-to-determine-if-a-vector-is-between-two-other-vectors  
 bool pointInTriangle(Point* z, Triangle* triangle)
 {
     bool in = false;
 
-    Vector rv1 = { -triangle->v1.x, -triangle->v1.y, -triangle->v1.z};
-    Vector v3 = vectorAdd(rv1, triangle->v2);  // 以v1 终点为起点的 第三条边
-    double cos_gamma = scalarProduct(&v3, &triangle->v1) / vectorLength(v3) / vectorLength(triangle->v1);
-    double gamma = acos(cos_gamma);
+    Vector v1 = triangle->v1;
+    Vector v2 = triangle->v2;
 
-    Vector pz = pointDifference(*z, triangle->p);
-    double lpz = vectorLength(pz);
+    Vector v3 = pointDifference(*z, triangle->p);
 
-    double cos_beta = scalarProduct(&triangle->v2, &triangle->v1) / vectorLength(triangle->v2) / vectorLength(triangle->v1);
-    double beta = acos(cos_beta);   //
+    double t1 = scalarProduct(&crossVector(&v1, &v3), &crossVector(&v1, &v2));
+    double t2 = scalarProduct(&crossVector(&v2, &v3), &crossVector(&v2, &v1));
 
-    double lv1 = vectorLength(triangle->v1);  // length of v1
-    double lv2 = vectorLength(triangle->v2);  // length of v2
+    // between two vectors
+    if (t1 >= 0 && t2 >= 0) {
+        double cos_beta = scalarProduct(&triangle->v2, &triangle->v1) / vectorLength(triangle->v2) / vectorLength(triangle->v1);
+        double beta = acos(cos_beta);   //
 
-    // theta pz 与 v1 夹角，   tt  pz 与 v2 夹角
-    double cos_theta = scalarProduct(&pz, &triangle->v1) / vectorLength(pz) / vectorLength(triangle->v1);
-    double cos_tt = scalarProduct(&pz, &triangle->v2) / vectorLength(pz) / vectorLength(triangle->v2);
-    double theta = acos(cos_theta);
-    if (cos_theta > 0 && cos_tt > 0 && 0 < theta && theta < beta && acos(cos_tt) < beta  &&  gamma < M_PI_2) { //  
+        Vector pz = pointDifference(*z, triangle->p);
+        double lpz = vectorLength(pz);
+
+        double cos_theta = scalarProduct(&pz, &triangle->v1) / vectorLength(pz) / vectorLength(triangle->v1);
+        double theta = acos(cos_theta);
+
+        Vector rv1 = { -triangle->v1.x, -triangle->v1.y, -triangle->v1.z };
+        Vector v3 = vectorAdd(rv1, triangle->v2);  // 以v1 终点为起点的 第三条边
+        double cos_gamma = scalarProduct(&v3, &rv1) / vectorLength(v3) / vectorLength(rv1);
+        double gamma = acos(cos_gamma);
+
+        double lv1 = vectorLength(triangle->v1);  // length of v1
+        double lv2 = vectorLength(triangle->v2);  // length of v2
+
         // length of pz`   z` 为 pz直线与 v3 的交点
         double h = lv1 * tan(theta) * tan(gamma) / (tan(theta) + tan(gamma));
-        if (theta > M_PI_2 ||  gamma > M_PI_2    )
+        if (theta > M_PI_2 || gamma > M_PI_2)
             int i = 9;
         //printf("%f\n", h);
         double lpzp = h / sin(theta);
@@ -222,8 +257,11 @@ bool pointInTriangle(Point* z, Triangle* triangle)
         }
     }
     else {
-        // 根本不在一个象限内，
+
     }
+
+
+
 
     return in;
 }
