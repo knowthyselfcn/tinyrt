@@ -23,7 +23,8 @@ typedef struct {
 	Point origin;
 	Vector direction;
     Vector viewPlanePos;
-    int px, py;   //
+    int px, py;   // for debug
+    
 } Ray;
 
 typedef  Ray Line;  // Ö±Ïß

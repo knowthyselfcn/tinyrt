@@ -16,49 +16,48 @@ Mat4_1 transposeMat1_4(Vector4* v){
 
 
 
-double vectorLength(Vector v) {
-    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
-}
+//double vectorLength(Vector v) {
+//    return sqrt(v.x*v.x + v.y*v.y + v.z*v.z);
+//}
 
-Vector vectorAdd(Vector v1, Vector v2){
-    Vector v = { v1.x + v2.x, v1.y + v2.y, v1.z + v2.z };
-    return v;
-}
+//Vector vectorAdd(Vector* v1, Vector* v2){
+//    Vector v = { v1->x + v2->x, v1->y + v2->y, v1->z + v2->z };
+//    return v;
+//}
 
-Vector reverseVector(Vector v1) {
+Vector reverseVector(Vector* v1) {
     Vector v;
-    v.x = -1 * v1.x;
-    v.y = -1 * v1.y;
-    v.z = -1 * v1.z;
+    v.x = -1 * v1->x;
+    v.y = -1 * v1->y;
+    v.z = -1 * v1->z;
     
     return v;
 }
 
 
-Vector pointDifference(Point p1, Point p2) {
-    Vector v = { p1.x - p2.x, p1.y - p2.y, p1.z - p2.z };
-    return v;
-}
+//Vector pointDifference(Point* p1, Point* p2) {
+//    Vector v = { p1->x - p2->x, p1->y - p2->y, p1->z - p2->z };
+//    return v;
+//}
 
-// 某点经过向量的transform，到达新的点，其实应该起名 transformPoint(Point, Vector)
-Point pointAdd(Point p1, Vector v) {
-    Vector v1 = { p1.x + v.x, p1.y + v.y, p1.z + v.z };
-    return v1;
-}
 
-double scalarProduct(Vector* v1, Vector* v2) {
-    return v1->x*v2->x + v1->y*v2->y + v1->z*v2->z;
-}
+//Point pointAdd(Point *p1, Vector* v) {
+//    Vector v1 = { p1->x + v->x, p1->y + v->y, p1->z + v->z };
+//    return v1;
+//}
 
-// 需要注意v1 为x， v2为y，顺序不能改变， 否则构造出来 -z   x * y =z
-// z * x = y
-Vector crossVector(Vector* v1, Vector* v2) {
-    Vector v = { v1->y * v2->z - v2->y * v1->z,
-                v1->z * v2->x - v2->z * v1->x,
-                v1->x*v2->y - v1->y * v2->x };
-    
-    return v;
-}
+// double scalarProduct(Vector* v1, Vector* v2) {
+//    return v1->x*v2->x + v1->y*v2->y + v1->z*v2->z;
+//}
+
+
+//Vector crossVector(Vector* v1, Vector* v2) {
+//    Vector v = { v1->y * v2->z - v2->y * v1->z,
+//                v1->z * v2->x - v2->z * v1->x,
+//                v1->x*v2->y - v1->y * v2->x };
+//    
+//    return v;
+//}
 
 
 void  normalizeColor(Color* color) {
@@ -70,25 +69,25 @@ void  normalizeColor(Color* color) {
     }
 }
 
-Vector scalarVector(Vector* v, double scale)
-{
-    Vector v1;
-    v1.x = v->x * scale;
-    v1.y = v->y * scale;
-    v1.z = v->z * scale;
-    
-    return v1;
-}
+//Vector scalarVector(Vector* v, double scale)
+//{
+//    Vector v1;
+//    v1.x = v->x * scale;
+//    v1.y = v->y * scale;
+//    v1.z = v->z * scale;
+//    
+//    return v1;
+//}
 
-Vector normalize(Vector* v)
-{
-    Vector v1;
-    double l = vectorLength(*v);
-    v1.x = v->x / l;
-    v1.y = v->y / l;
-    v1.z = v->z / l;
-    return  v1;
-}
+//Vector normalize(Vector* v)
+//{
+//    Vector v1;
+//    double l = vectorLength(*v);
+//    v1.x = v->x / l;
+//    v1.y = v->y / l;
+//    v1.z = v->z / l;
+//    return  v1;
+//}
 
 //伴随矩阵方法
 Mat3 inverseMat3(Mat3 *matrix)
@@ -267,9 +266,9 @@ bool doesRaySphereIntersect(Ray* ray, Sphere* sphere)
 {
     bool intersects = false;
 
-    Vector centerIntersection = pointDifference(ray->origin, sphere->center);
-    double cos_theta = scalarProduct(&ray->direction, &centerIntersection) / vectorLength(ray->direction)
-        / vectorLength(centerIntersection);
+    Vector centerIntersection = pointDifference(&ray->origin, &sphere->center);
+    double cos_theta = scalarProduct(&ray->direction, &centerIntersection) / vectorLength(&ray->direction)
+        / vectorLength(&centerIntersection);
 
     if (cos_theta > 0)
         intersects = false;
