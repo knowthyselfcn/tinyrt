@@ -19,12 +19,23 @@ typedef struct {
     double  w;
 } Vector4;
 
+enum RayType
+{
+    EYE_RAY,
+    REFL_RAY,
+    REFR_RAY,
+    LIGHT_RAY,
+    __Ray_Type_Size
+};
+
 typedef struct {
 	Point origin;
 	Vector direction;
     Vector viewPlanePos;
+#ifdef DEBUG
     int px, py;   // for debug
-    
+    RayType type;
+#endif
 } Ray;
 
 typedef  Ray Line;  // Ö±Ïß

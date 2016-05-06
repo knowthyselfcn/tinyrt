@@ -97,10 +97,10 @@ Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* li
 }
 
 
+#include "intersect.h"
 
 
-
-Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights)
+Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, Object *objs[], int num)
 {
     Color color = { 255, 0, 0 };    // 最终计算出来的颜色
     Vector* light = (Vector*)lights->data[0].light;
@@ -108,11 +108,47 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights)
     for (int i = 0; i < lights->size; i++) {
         Vector directionToLight = pointDifference(light, &intersect->point);
         double length = vectorLength(&directionToLight);
-        double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+        bool canReachLight = true;
+        // TODO 还需要判断此 intersect 是否能够到达light, 若不能，则不shade
+        Ray reflRay;
+        reflRay.origin = intersect->point;
+        reflRay.direction = directionToLight;    // 全向量
+        reflRay.type = REFL_RAY;
+ 
+#ifdef DEBUG        
+        double ll = 0.01;
+        if (abs(intersect->point.x) < ll &&  abs(intersect->point.y) < ll   && abs(intersect->point.z) < ll) {
+            int iiiii = 1;
+            //canReachLight = false;
+        }
+#endif
 
-        color.x *= scale;				// 模拟光源光衰减
-        color.y *= scale;
-        color.z *= scale;
+        //Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
+        //if (-1 != reflIntersect.objectId)
+        //{
+        //    Vector t = pointDifference(&reflIntersect.point, &intersect->point);
+        //    double l = vectorLength(&t);
+        //    double d = vectorLength(&directionToLight);
+        //    if (l < epsilon)
+        //        int i = 9;  // 自己
+        //    else if (l < d) {
+        //        canReachLight = false; // FIXME
+        //    }
+        //}
+
+
+        
+        if (canReachLight){
+            double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+            color.x *= scale;				// 模拟光源光衰减
+            color.y *= scale;
+            color.z *= scale;
+        }
+        else {
+            color.x *= 0;	 //  没有light 照到，所以是黑的
+            color.y *= 0;
+            color.z *= 0;
+        }
     }
 
     return color;

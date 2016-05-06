@@ -46,8 +46,8 @@ EyeSpace eyeSpace;
 
 bool initEyeSpace()
 {
-    eyeSpace.eye = { 0, 5, 30 };
-    Vector up = { 0, 1, 0 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
+    eyeSpace.eye = { 0, 10, 30 };
+    Vector up = { 0, 1, -1 };  // 头顶的方向, 局部坐标系y，    // 世界坐标系 
     Vector lookAt = { 0, 0, 0 };  //眼睛向前的方向  
     //up = {0, 0, -1};   // 向地面俯视
     //lookAt = {0, -10, 0};
@@ -79,90 +79,14 @@ Ray getRay(int x, int y ) {
 
     r.direction = vectorAdd(&eyeSpace.eye2Center, &vectorAdd(&b,  &c));   //
     r.viewPlanePos = pointAdd(&r.origin, &r.direction);
-
-    //r.px = x; r.py = y; // for debug
-
+#ifdef DEBUG
+    r.px = x; r.py = y; // for debug
+    r.type = EYE_RAY;
+#endif
     return r;
 }
 
 
-
-// 判断与哪个物体首次相交
-Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
-{
-    Intersect intersection = {0,0,0, -1};
-    List *list = NULL, *curr = NULL, *nearestIntersect = NULL;
-
-    // 收集相交的物体
-    //int index = -1;
-    for (int i = 0; i < num; i++)
-    {
-        Object* obj = objs[i];
-        bool intersected = false;
-        switch (obj->type)
-        {
-        case SPHERE:
-            intersected = intersectSphere(ray, (Sphere*)obj->o, &intersection);
-            break;
-        case PLANE:
-            intersected = intersectPlane(ray, (Plane*)obj->o, &intersection);
-            break;
-        case CUBOID:
-            intersected = intersectCuboid(ray, (Cuboid*)obj->o, &intersection);
-            break;
-        case RECTANGLE:
-            intersected = intersectRect(ray, (Rectangle*)obj->o, &intersection);
-            break;
-        case TRIANGLE:
-            intersected = intersectTriangle(ray, (Triangle*)obj->o, &intersection);
-            break;
-        default:
-            std::cout << "obj not checked intersection, bad logic" << std::endl;
-            break;
-        }
-
-        // 标记
-        if (intersected){
-            curr = (List*)malloc(sizeof(List));
-            intersection.objectId = i;
-            curr->intersect = intersection;
-            curr->next = NULL;
-
-            if (NULL == list)
-                list = curr;
-            else
-                list->next = curr;
-        }
-        else {
-
-        }
-    }
-    // 需要根据向量长度判断哪个最近
-    double minLength = DBL_MAX;
-    curr = list;
-
-    while (curr) {
-        Vector ez = pointDifference(&curr->intersect.point, &ray->origin);
-        double vectorLen = vectorLength(&ez);
-        if (minLength > vectorLen) {
-            minLength = vectorLen;
-            nearestIntersect = curr;
-            
-            intersection = curr->intersect;
-        }
-        curr = curr->next;
-    }
-
-    // release List mem
-    curr = list;  
-    while (curr) {
-        List* next = curr->next;
-        free((void*)curr);
-        curr = next;
-    }
-    
-    return intersection;
-}
 
 
 
@@ -189,7 +113,7 @@ Color traceRay(Ray* ray, Object *objs[], int num)
                 color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &lights);
                 break;
             case PLANE:
-                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &lights);
+                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &lights, objs, num);
                 break;
             case CUBOID:
                 color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &lights);
@@ -215,7 +139,6 @@ Color traceRay(Ray* ray, Object *objs[], int num)
 
 
     
-
 extern   int pointInRectangle_counter ;
 int main(int argc, char* argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -248,8 +171,10 @@ int main(int argc, char* argv[]) {
     cuboid.rectangles[4] = { pp, ryVec, rhVec, };
     cuboid.rectangles[5] = { p,  hVec,  yVec, };
 
-    Rectangle rect = { -3, 0.5, 5,  1.5, 0, 0,      0, 1, -1, };
-    Triangle triangle = { 4, 0.5, 0, 1.5, 0, 0, 0, 1, -1, };
+    Rectangle rect = { -3, 0.5, 1,  2, 0, 0,      0, 2, -2, };
+        rect = { -3, 1, 1, 2, 0, 0, 0, -2, -2, };  // for debug Rectangle
+    Triangle triangle = { 3, 1, 1,    2, 0, 0,  0, 1, -2, };
+       
 
     Object objPlane = { PLANE, (void*)&basePlane };
     Object objSphere = { SPHERE, (void*)& sphere };
@@ -257,16 +182,21 @@ int main(int argc, char* argv[]) {
     Object objRect = { RECTANGLE, (void*)& rect };
     Object objTriangle = { TRIANGLE, (void*)& triangle };
 
-    Object* objs[] = { &objPlane, &objSphere, &objCuboid, &objRect, &objTriangle };  //   
+    Object *objs[] = { &objPlane,   &objCuboid, };  //       &objSphere, 
+    // &objRect, &objTriangle,
+    
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
  
-    Ray r;
-    // x, y 一定要放到下面来定义，否则就错了      //Color c;    private(c) 
-#pragma omp parallel for schedule(dynamic, 4)  private(r) 
+    //Ray r;
+    // x, y 一定要放到下面来定义，否则就错了      //Color c;    private(c)  private(r) 
+#define USE_OMP
+#ifdef USE_OMP
+#pragma omp parallel for schedule(dynamic, 8) 
+#endif
 	for (int x = 0; x<width; x++) {     // 列扫描
 		for (int y = 0; y<height; y++) {
-            r = getRay(x, y);
+            Ray r = getRay(x, y);
 
             int objSize = sizeof(objs) / sizeof(Object*);
             Color c = traceRay(&r, objs, objSize);
