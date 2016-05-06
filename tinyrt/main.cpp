@@ -251,22 +251,22 @@ int main(int argc, char* argv[]) {
     Rectangle rect = { -3, 0.5, 5,  1.5, 0, 0,      0, 1, -1, };
     Triangle triangle = { 4, 0.5, 0, 1.5, 0, 0, 0, 1, -1, };
 
-    Object obj1 = { PLANE, (void*)&basePlane };
-    Object obj2 = { SPHERE, (void*)& sphere };
-    Object obj3 = { CUBOID, (void*)& cuboid };
-    Object obj4 = { RECTANGLE, (void*)& rect };
-    Object obj5 = { TRIANGLE, (void*)& triangle };
+    Object objPlane = { PLANE, (void*)&basePlane };
+    Object objSphere = { SPHERE, (void*)& sphere };
+    Object objCuboid = { CUBOID, (void*)& cuboid };
+    Object objRect = { RECTANGLE, (void*)& rect };
+    Object objTriangle = { TRIANGLE, (void*)& triangle };
 
-    Object* objs[] = { &obj1, &obj2, &obj3, &obj4, &obj5 };  //  
+    Object* objs[] = { &objPlane, &objSphere, &objCuboid, &objRect, &objTriangle };  //   
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
  
     Ray r;
-    // x, y 一定要放到下面来定义，否则就错了
-#pragma omp parallel for schedule(dynamic, 4)  private (r)
+    // x, y 一定要放到下面来定义，否则就错了      //Color c;    private(c) 
+#pragma omp parallel for schedule(dynamic, 4)  private(r) 
 	for (int x = 0; x<width; x++) {     // 列扫描
 		for (int y = 0; y<height; y++) {
-			r = getRay(x, y);
+            r = getRay(x, y);
 
             int objSize = sizeof(objs) / sizeof(Object*);
             Color c = traceRay(&r, objs, objSize);
