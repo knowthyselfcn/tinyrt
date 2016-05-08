@@ -23,7 +23,8 @@ bool intersectSphere(Ray* ray, Sphere* sphere, Intersect* intersect)
         double e = sqrt(disc);
         double t = -(b + e) / (a * 2.0);
         if (t >= 0) {
-            intersect->point = pointAdd(&ray->origin, &scalarVector(&rayDir, t));
+            Vector rayVec = scalarVector(&rayDir, t);
+            intersect->point = pointAdd(&ray->origin, &rayVec);
         }
         intersected = true;
 
@@ -84,8 +85,12 @@ inline bool betweenVectors(Vector* v1, Vector* v2, Vector* v)
 {
     bool in = false;
 
-    double t1 = scalarProduct(&crossVector(v1, v), &crossVector(v1, v2));
-    double t2 = scalarProduct(&crossVector(v2, v), &crossVector(v2, v1));
+    Vector cv12 = crossVector(v1, v2);
+    Vector cv1 = crossVector(v1, v);
+    double t1 = scalarProduct(&cv1, &cv12);
+    Vector cv21 = crossVector(v2, v1);
+    Vector cv2 = crossVector(v2, v);
+    double t2 = scalarProduct(&cv2, &cv21);
 
     if (t1 >= 0 && t2 >= 0) {
         in = true;
@@ -135,9 +140,9 @@ bool pointInRectangle(Point* z, Rectangle* rect)
 #ifdef DEBUG
 if (ray->type == REFL_RAY)
 int jjjjjjjjjj = 1;
-#endif
+#endif   _backup
 */
-bool intersectRect_backup(Ray* ray, Rectangle* rect, Intersect* intersect)
+bool intersectRect_new(Ray* ray, Rectangle* rect, Intersect* intersect)
 {
     bool intersected = false;
 
@@ -163,7 +168,7 @@ bool intersectRect_backup(Ray* ray, Rectangle* rect, Intersect* intersect)
             l = h / cos(c_theta);
         }  // else 光线原理平面发出去了
     }
-    else {  
+    else {  // 这是
         double t2 = scalarProduct(&ray->direction, &rectNormalDir);
         if (t2 >= 0){ 
             rayThroughPlane = true;
@@ -173,7 +178,7 @@ bool intersectRect_backup(Ray* ray, Rectangle* rect, Intersect* intersect)
             l = h / cos_theta;
         }  // else 光线飞走了
     }
-    //   TODO 判断是否共面   与法相垂直， 什么都看不到 
+    //   TODO 判断是否共面   与法相垂直， 什么都看不到
     if (rayThroughPlane) {
         Vector rayNormal = normalize(&ray->direction);
         Vector ez = scalarVector(&rayNormal, l);
@@ -204,8 +209,9 @@ bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
 
         if (cos_beta > 0) { //beta < M_PI_2
             double h = vectorLength(&pe) * cos_beta;
-            double theta = acos(cos_theta);
-            double l = h / sin(theta - M_PI_2);   // z 为直线穿过平面点， l 为 ez 长度
+//            double theta = acos(cos_theta);
+            double l = - h / cos_theta ;   // z 为直线穿过平面点， l 为 ez 长度
+            assert(l >= 0);
             Vector rayNormal = normalize(&ray->direction);
             Vector ez = scalarVector(&rayNormal, l);
             Point z = pointAdd(&ray->origin, &ez);
@@ -215,8 +221,11 @@ bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
                 intersected = true;
             }
             else {
-
+                
             }
+        }
+        else {
+            
         }
     }
 
@@ -229,17 +238,19 @@ bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect)
 bool pointInTriangle(Point* z, Triangle* triangle)
 {
     bool in = false;
-
+    
     Vector* v1 = &triangle->v1;
     Vector* v2 = &triangle->v2;
 
     Vector pz = pointDifference(z, &triangle->p);  
 
-    double t1 = scalarProduct(&crossVector(v1, &pz), &crossVector(v1, v2));
-    double t2 = scalarProduct(&crossVector(v2, &pz), &crossVector(v2, v1));
+//    double t1 = scalarProduct(&crossVector(v1, &pz), &crossVector(v1, v2));
+//    double t2 = scalarProduct(&crossVector(v2, &pz), &crossVector(v2, v1));
+    
+    bool between = betweenVectors(v1, v2, &pz);
 
     // between two vectors
-    if (t1 >= 0 && t2 >= 0) {
+    if (between) {
         Vector pz = pointDifference(z, &triangle->p);
         double lpz = vectorLength(&pz);
 
@@ -332,6 +343,7 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
         Rectangle* rect = &rectangles[i];
         // 必须判断外侧相交，而不是内侧
         intersected = intersectRect(ray, rect, intersect);
+//        intersected = intersectRect_new(ray, rect, intersect);
         if (intersected) {
             intersect->rectIdx = i;
             break;
@@ -369,7 +381,7 @@ Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
             intersected = intersectCuboid(ray, (Cuboid*)obj->o, &intersection);
             break;
         case RECTANGLE:
-            intersected = intersectRect(ray, (Rectangle*)obj->o, &intersection);
+            intersected = intersectRect_new(ray, (Rectangle*)obj->o, &intersection);
             break;
         case TRIANGLE:
             intersected = intersectTriangle(ray, (Triangle*)obj->o, &intersection);

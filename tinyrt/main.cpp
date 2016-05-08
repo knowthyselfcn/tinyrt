@@ -77,7 +77,8 @@ Ray getRay(int x, int y ) {
     Vector b = scalarVector(&eyeSpace.v,  eyeSpace.height / 2 - ((double)y)/1000);
     Vector c = scalarVector(&eyeSpace.u, -eyeSpace.width / 2  + ((double)x)/1000);
 
-    r.direction = vectorAdd(&eyeSpace.eye2Center, &vectorAdd(&b,  &c));   //
+    Vector bc = vectorAdd(&b,  &c);
+    r.direction = vectorAdd(&eyeSpace.eye2Center, &bc);   //
     r.viewPlanePos = pointAdd(&r.origin, &r.direction);
 #ifdef DEBUG
     r.px = x; r.py = y; // for debug
@@ -149,12 +150,13 @@ int main(int argc, char* argv[]) {
 	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
     Sphere sphere = {0, 0.5, 0,      1 };
     
-    Cuboid cuboid = { 1, 0, 0,  1, 0, -1,    1, 0, 1,  1.414213562373 };   // obj3
+    Cuboid cuboid = { -3, 0, 0,  1, 0, -1,    1, 0, 1,  1.414213562373 };   // obj3
     Point p = cuboid.p;
     Vector tmpYDir = crossVector(&cuboid.hVector, &cuboid.wVector);
     Vector normaledY = normalize(&tmpYDir);
     Vector yVec = scalarVector(&normaledY, cuboid.yLenth);
-    Vector tmpVec = vectorAdd(&vectorAdd(&cuboid.wVector, &cuboid.hVector), &yVec);   // 对角向量
+    Vector whVec = vectorAdd(&cuboid.wVector, &cuboid.hVector);
+    Vector tmpVec = vectorAdd(&whVec, &yVec);   // 对角向量
     Point pp = pointAdd(&p, &tmpVec);
     Vector wVec = cuboid.wVector;
     Vector hVec = cuboid.hVector;
@@ -172,8 +174,8 @@ int main(int argc, char* argv[]) {
     cuboid.rectangles[5] = { p,  hVec,  yVec, };
 
     Rectangle rect = { -3, 0.5, 1,  2, 0, 0,      0, 2, -2, };
-        rect = { -3, 1, 1, 2, 0, 0, 0, -2, -2, };  // for debug Rectangle
-    Triangle triangle = { 3, 1, 1,    2, 0, 0,  0, 1, -2, };
+        rect = { 1, 1, 1, 2, 0, 0, 0, 1, -1, };  // for debug Rectangle
+    Triangle triangle = { 3, 1.5, 1,    2, 0, 0,  0, 1, -2, };
        
 
     Object objPlane = { PLANE, (void*)&basePlane };
@@ -182,15 +184,15 @@ int main(int argc, char* argv[]) {
     Object objRect = { RECTANGLE, (void*)& rect };
     Object objTriangle = { TRIANGLE, (void*)& triangle };
 
-    Object *objs[] = { &objPlane,   &objCuboid, };  //       &objSphere, 
-    // &objRect, &objTriangle,
+    Object *objs[] = { &objPlane,  &objSphere,   &objCuboid,  &objRect, &objTriangle,};  //
+    //
     
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
  
     //Ray r;
     // x, y 一定要放到下面来定义，否则就错了      //Color c;    private(c)  private(r) 
-#define USE_OMP
+#define USE_OMPm
 #ifdef USE_OMP
 #pragma omp parallel for schedule(dynamic, 8) 
 #endif

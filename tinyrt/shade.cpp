@@ -123,18 +123,18 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, 
         }
 #endif
 
-        //Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
-        //if (-1 != reflIntersect.objectId)
-        //{
-        //    Vector t = pointDifference(&reflIntersect.point, &intersect->point);
-        //    double l = vectorLength(&t);
-        //    double d = vectorLength(&directionToLight);
-        //    if (l < epsilon)
-        //        int i = 9;  // 自己
-        //    else if (l < d) {
-        //        canReachLight = false; // FIXME
-        //    }
-        //}
+        Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
+        if (-1 != reflIntersect.objectId)
+        {
+            Vector t = pointDifference(&reflIntersect.point, &intersect->point);
+            double l = vectorLength(&t);
+            double d = vectorLength(&directionToLight);
+            if (l < epsilon)
+                int i = 9;  // 自己
+            else if (l < d) {
+                canReachLight = false; // FIXME
+            }
+        }
 
 
         
