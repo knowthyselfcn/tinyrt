@@ -31,9 +31,6 @@ bool  add_PointLight(Lights* lights, PointLight light)
     pointLight.type = POINT_LIGHT;
     *(PointLight *)pointLight.light = { light };
 
-    lights->data[lights->size] = pointLight;
-    lights->size++;
-
     ret = addLight(lights, pointLight);
     if (false == ret) {
         free(pointLight.light);
@@ -70,9 +67,13 @@ bool  add_DirectiontLight(Lights* lights, DirectionLight light)
 
 
 
+
+
+
+
 Color shade_Sphere_PointLight(Ray* ray, Sphere* sphere, Intersect* intersection, PointLight* light)
 {
-    Color color;
+    Color color = { 0 };
     
     Color materialColor = light->color;
     
@@ -96,6 +97,14 @@ Color shade_Sphere_PointLight(Ray* ray, Sphere* sphere, Intersect* intersection,
         color.y = materialColor.y * scale;
         color.z = materialColor.z * scale;
     }
+ 
+    return color;
+}
+
+Color shade_Sphere_DirLight(Ray* ray, Sphere* sphere, Intersect* intersection, DirectionLight* light)
+{
+    Color color = { 0 };
+    
     
     
     
@@ -105,77 +114,192 @@ Color shade_Sphere_PointLight(Ray* ray, Sphere* sphere, Intersect* intersection,
 
 Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights)
 {
-    Color color = { 0 };  // result color
+    Color retColor = { 0 };  // result color
     
     
     for(int i=0; i < lights->size; i++) {
         Light light = lights->data[i];
+        Color color;
         switch (light.type) {
             case POINT_LIGHT:
                 color = shade_Sphere_PointLight( ray, sphere, intersection, (PointLight*)light.light);
                 break;
+            case DIRECTION_LIGHT:
+                color = shade_Sphere_DirLight(ray, sphere, intersection, (DirectionLight*)light.light );
                 
             default:
                 break;
         }
+        
+        retColor.x += color.x;
+        retColor.y += color.y;
+        retColor.z += color.z;
     }
     
+    return retColor;
+}
+
+
+
+
+
+
+
+
+
+Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, DirectionLight* light, Object *objs[], int num)
+{
+    Color retColor;
+    
+    Vector lightDir = light->dir;
+    Color lightColor = light->color;
+    
+    
+    Vector directionToLight = scalarVector(&lightDir, -1); //
+    
+    bool canReachLight = true;
+    // TODO 还需要判断此 intersect 是否能够到达light, 若不能，则不shade
+    Ray reflRay;
+    reflRay.origin = intersect->point;
+    reflRay.direction = directionToLight;    // 全向量
+    reflRay.type = REFL_RAY;
+
+    
+    Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
+    if (-1 != reflIntersect.objectId)
+    {
+        Vector t = pointDifference(&reflIntersect.point, &intersect->point);
+        double l = vectorLength(&t);
+        double d = vectorLength(&directionToLight);
+        if (l < epsilon)
+            int i = 9;  // 自己
+        else if (l < d) {
+            canReachLight = false; // FIXME
+        }
+    }
+    
+    if (canReachLight){
+        retColor = lightColor;
+    }
+    else {
+        retColor.x *= 0;	 //  没有light 照到，所以是黑的
+        retColor.y *= 0;
+        retColor.z *= 0;
+    }
+    
+    
+    
+    
+    
+    return retColor;
+}
+
+
+
+Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, Env_light* light, Object *objs[], int num)
+{
+    Color color;
+    
+    
+    
+    
+    
     return color;
+    
+}
+
+
+Color shade_Plane_PointLight(Ray* ray, Plane* plane, Intersect* intersect, PointLight* light, Object *objs[], int num)
+{
+
+    
+    Vector lightPos = light->pos;
+    Color color = light->color;
+    
+    Vector directionToLight = pointDifference(&lightPos, &intersect->point);
+    double length = vectorLength(&directionToLight);
+    bool canReachLight = true;
+    // TODO 还需要判断此 intersect 是否能够到达light, 若不能，则不shade
+    Ray reflRay;
+    reflRay.origin = intersect->point;
+    reflRay.direction = directionToLight;    // 全向量
+    reflRay.type = REFL_RAY;
+    
+#ifdef DEBUG
+    double ll = 0.01;
+    if (abs(intersect->point.x) < ll &&  abs(intersect->point.y) < ll   && abs(intersect->point.z) < ll) {
+        int iiiii = 1;
+        //canReachLight = false;
+    }
+#endif
+    
+    Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
+    if (-1 != reflIntersect.objectId)
+    {
+        Vector t = pointDifference(&reflIntersect.point, &intersect->point);
+        double l = vectorLength(&t);
+        double d = vectorLength(&directionToLight);
+        if (l < epsilon)
+            int i = 9;  // 自己
+        else if (l < d) {
+            canReachLight = false; // FIXME
+        }
+    }
+    
+    if (canReachLight){
+        double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+        assert(scale < 1);
+        color.x *= scale;				// 模拟光源光衰减
+        color.y *= scale;
+        color.z *= scale;
+    }
+    else {
+        color.x *= 0;	 //  没有light 照到，所以是黑的
+        color.y *= 0;
+        color.z *= 0;
+    }
+
+    
+    
+    return color;
+    
 }
 
 
 Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, Object *objs[], int num)
 {
-    Color color = { 255, 0, 0 };    // 最终计算出来的颜色
-    Vector* light = (Vector*)lights->data[0].light;
+    Color retColor = { 0, 0, 0 };    // 最终计算出来的颜色
+   
 
     for (int i = 0; i < lights->size; i++) {
-        Vector directionToLight = pointDifference(light, &intersect->point);
-        double length = vectorLength(&directionToLight);
-        bool canReachLight = true;
-        // TODO 还需要判断此 intersect 是否能够到达light, 若不能，则不shade
-        Ray reflRay;
-        reflRay.origin = intersect->point;
-        reflRay.direction = directionToLight;    // 全向量
-        reflRay.type = REFL_RAY;
- 
-#ifdef DEBUG        
-        double ll = 0.01;
-        if (abs(intersect->point.x) < ll &&  abs(intersect->point.y) < ll   && abs(intersect->point.z) < ll) {
-            int iiiii = 1;
-            //canReachLight = false;
+        Light light = lights->data[i];
+        Color color = { 0 };
+        switch (light.type) {
+            case POINT_LIGHT:
+                color = shade_Plane_PointLight(ray, plane, intersect, (PointLight*)light.light, objs, num);
+                break;
+            case ENV_LIGHT:
+                color = shade_Plane_EnvLight(ray, plane, intersect, (Env_light*)light.light, objs, num);
+                break;
+            case DIRECTION_LIGHT:
+                color = shade_Plane_DirLight(ray, plane, intersect, (DirectionLight*)light.light, objs, num);
+                break;
+            default:
+                break;
         }
-#endif
-
-        Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
-        if (-1 != reflIntersect.objectId)
-        {
-            Vector t = pointDifference(&reflIntersect.point, &intersect->point);
-            double l = vectorLength(&t);
-            double d = vectorLength(&directionToLight);
-            if (l < epsilon)
-                int i = 9;  // 自己
-            else if (l < d) {
-                canReachLight = false; // FIXME
-            }
-        }
-
-
         
-        if (canReachLight){
-            double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
-            color.x *= scale;				// 模拟光源光衰减
-            color.y *= scale;
-            color.z *= scale;
+        retColor.x += color.x;
+        retColor.y += color.y;
+        retColor.z += color.z;
+        
+        
+        if (retColor.x > 256 || retColor.y > 256 || retColor.z > 256) {
+//            printf("%f \t\t %f \t\t %f \n", retColor.x, retColor.y, retColor.z);
         }
-        else {
-            color.x *= 0;	 //  没有light 照到，所以是黑的
-            color.y *= 0;
-            color.z *= 0;
-        }
-    }
+        
+      }
 
-    return color;
+    return retColor;
 }
 
 

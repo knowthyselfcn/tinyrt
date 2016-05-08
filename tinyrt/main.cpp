@@ -23,8 +23,8 @@ void initLights()
     PointLight pointLight = { 0, 5, 0,  255, 0,0};
     add_PointLight(&lights, pointLight);
 
-    //DirectionLight dLight = {0,-1,0,    0,128, 0}; // °ëÂÌÉ«
-    //add_DirectiontLight(&lights, dLight);
+    DirectionLight dLight = { -1, 0, 0,    30, 30, 30}; // °ëÂÌÉ«
+    add_DirectiontLight(&lights, dLight);
 
     int i = 23;
 }
