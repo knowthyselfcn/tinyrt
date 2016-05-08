@@ -40,17 +40,19 @@ Mat3 inverseMat3(Mat3 *matrix)
 {
     Mat3 mat;
     
-    double	t00 = matrix->m[1][1] * matrix->m[2][2] - matrix->m[2][1] * matrix->m[1][2];
-    double	t01 = matrix->m[1][0] * matrix->m[2][2] - matrix->m[2][0] * matrix->m[1][2];
-    double	t02 = matrix->m[1][0] * matrix->m[2][1] - matrix->m[2][0] * matrix->m[1][1];
-    double	t10 = matrix->m[0][1] * matrix->m[2][2] - matrix->m[2][1] * matrix->m[0][2];
-    double	t11 = matrix->m[2][2] * matrix->m[0][0] - matrix->m[0][2] * matrix->m[2][0];
-    double	t12 = matrix->m[0][0] * matrix->m[2][1] - matrix->m[2][0] * matrix->m[0][1];
-    double	t20 = matrix->m[0][1] * matrix->m[1][2] - matrix->m[0][2] * matrix->m[1][1];
-    double	t21 = matrix->m[0][0] * matrix->m[1][2] - matrix->m[1][0] * matrix->m[0][2];
-    double	t22 = matrix->m[0][0] * matrix->m[1][1] - matrix->m[1][0] * matrix->m[0][1];
+    double (*m)[3] = matrix->m;
     
-    double fDetInv = 1.0f / (matrix->m[0][0] * t00 - matrix->m[0][1] * t01 + matrix->m[0][2] * t02);
+    double	t00 = m[1][1] * m[2][2] - m[2][1] * m[1][2];
+    double	t01 = m[1][0] * m[2][2] - m[2][0] * m[1][2];
+    double	t02 = m[1][0] * m[2][1] - m[2][0] * m[1][1];
+    double	t10 = m[0][1] * m[2][2] - m[2][1] * m[0][2];
+    double	t11 = m[2][2] * m[0][0] - m[0][2] * m[2][0];
+    double	t12 = m[0][0] * m[2][1] - m[2][0] * m[0][1];
+    double	t20 = m[0][1] * m[1][2] - m[0][2] * m[1][1];
+    double	t21 = m[0][0] * m[1][2] - m[1][0] * m[0][2];
+    double	t22 = m[0][0] * m[1][1] - m[1][0] * m[0][1];
+    
+    double fDetInv = 1.0f / (m[0][0] * t00 - m[0][1] * t01 + m[0][2] * t02);
     
     mat.m[0][0] = fDetInv * t00;
     mat.m[0][1] = fDetInv * t10;
@@ -81,42 +83,46 @@ Mat4 inverseMat4(Mat4 *a)
 {
     Mat4 mat; // tmp
     
-    if (fabs(a->m[3][3] - 1.0f) > .001f)
+    
+    double (*m)[4] = a->m;
+    
+    if (fabs(m[3][3] - 1.0f) > .001f)
         throw "";
     //    if (fabs(a->m[0][3]) > .001f ||
-    //        fabs(a->m[1][3]) > .001f ||
-    //        fabs(a->m[2][3]) > .001f)
+    //        fabs(m[1][3]) > .001f ||
+    //        fabs(m[2][3]) > .001f)
     //        throw "";
+
     
     double fDetInv = 1.0f /
-    (a->m[0][0] * (a->m[1][1] * a->m[2][2] - a->m[1][2] * a->m[2][1]) -
-     a->m[0][1] * (a->m[1][0] * a->m[2][2] - a->m[1][2] * a->m[2][0]) +
-     a->m[0][2] * (a->m[1][0] * a->m[2][1] - a->m[1][1] * a->m[2][0]));
+    (m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+     m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+     m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]));
     
-    mat.m[0][0] = fDetInv * (a->m[1][1] * a->m[2][2] - a->m[1][2] * a->m[2][1]);
-    mat.m[0][1] = -fDetInv * (a->m[0][1] * a->m[2][2] - a->m[0][2] * a->m[2][1]);
-    mat.m[0][2] = fDetInv * (a->m[0][1] * a->m[1][2] - a->m[0][2] * a->m[1][1]);
+    mat.m[0][0] = fDetInv * (m[1][1] * m[2][2] - m[1][2] * m[2][1]);
+    mat.m[0][1] = -fDetInv * (m[0][1] * m[2][2] - m[0][2] * m[2][1]);
+    mat.m[0][2] = fDetInv * (m[0][1] * m[1][2] - m[0][2] * m[1][1]);
     mat.m[0][3] = 0.0f;
     
-    mat.m[1][0] = -fDetInv * (a->m[1][0] * a->m[2][2] - a->m[1][2] * a->m[2][0]);
-    mat.m[1][1] = fDetInv * (a->m[0][0] * a->m[2][2] - a->m[0][2] * a->m[2][0]);
-    mat.m[1][2] = -fDetInv * (a->m[0][0] * a->m[1][2] - a->m[0][2] * a->m[1][0]);
+    mat.m[1][0] = -fDetInv * (m[1][0] * m[2][2] - m[1][2] * m[2][0]);
+    mat.m[1][1] = fDetInv * (m[0][0] * m[2][2] - m[0][2] * m[2][0]);
+    mat.m[1][2] = -fDetInv * (m[0][0] * m[1][2] - m[0][2] * m[1][0]);
     mat.m[1][3] = 0.0f;
     
-    mat.m[2][0] = fDetInv * (a->m[1][0] * a->m[2][1] - a->m[1][1] * a->m[2][0]);
-    mat.m[2][1] = -fDetInv * (a->m[0][0] * a->m[2][1] - a->m[0][1] * a->m[2][0]);
-    mat.m[2][2] = fDetInv * (a->m[0][0] * a->m[1][1] - a->m[0][1] * a->m[1][0]);
+    mat.m[2][0] = fDetInv * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+    mat.m[2][1] = -fDetInv * (m[0][0] * m[2][1] - m[0][1] * m[2][0]);
+    mat.m[2][2] = fDetInv * (m[0][0] * m[1][1] - m[0][1] * m[1][0]);
     mat.m[2][3] = 0.0f;
     
-    mat.m[3][0] = -(a->m[3][0] * a->m[0][0] +
-                    a->m[3][1] * a->m[1][0] +
-                    a->m[3][2] * a->m[2][0]);
-    mat.m[3][1] = -(a->m[3][0] * a->m[0][1] +
-                    a->m[3][1] * a->m[1][1] +
-                    a->m[3][2] * a->m[2][1]);
-    mat.m[3][2] = -(a->m[3][0] * a->m[0][2] +
-                    a->m[3][1] * a->m[1][2] +
-                    a->m[3][2] * a->m[2][2]);
+    mat.m[3][0] = -(m[3][0] * m[0][0] +
+                    m[3][1] * m[1][0] +
+                    m[3][2] * m[2][0]);
+    mat.m[3][1] = -(m[3][0] * m[0][1] +
+                    m[3][1] * m[1][1] +
+                    m[3][2] * m[2][1]);
+    mat.m[3][2] = -(m[3][0] * m[0][2] +
+                    m[3][1] * m[1][2] +
+                    m[3][2] * m[2][2]);
     mat.m[3][3] = 1.0f;
     
     return mat;
@@ -151,8 +157,8 @@ bool testMultiplyMat3()
     Mat3 m2 = {0, 0, 2,     7, 5, 0,    2, 1, 1};
     
     Mat3 m3 = multiplyMat3(&m1, &m2);
-    //std::cout << m3.m[0][0] << "\t"  << m3.m[0][1] << "\t"  << m3.m[0][2] << "\t"  << m3.m[1][0] << "\t"  << m3.m[1][1] << "\t"  << m3.m[1][2] << "\t"  << m3.m[2][0] << "\t"  << m3.m[2][1] << "\t"  << m3.m[2][2] << std::endl;
-    //
+    //std::cout << m3.m[0][0] << "\t"  << m3.m[0][1] << "\t"  << m3.m[0][2] << "\t"  << m3.m[1][0] << "\t"  << m3.m[1][1] << "\t"  << m3.m[1][2] << "\t"
+        //<< m3.m[2][0] << "\t"  << m3.m[2][1] << "\t"  << m3.m[2][2] << std::endl;
     return true;
 }
 //
@@ -167,11 +173,15 @@ Mat4 multiplyMat4(Mat4* m1, Mat4* m2)
 // v 是横向的，需要转置
 Vector4 mulMat4_1(Mat4* mat1, Vector4* v) {
     Mat4_1 mat2 = transposeMat1_4(v);
-    double r0 = mat1->m[0][0] * mat2.m[0][0] +    mat1->m[0][1] * mat2.m[1][0] +   mat1->m[0][2] * mat2.m[2][0] +  mat1->m[0][3] *   mat2.m[3][0] ;
-    double r1 = mat1->m[1][0] * mat2.m[0][0] +    mat1->m[1][1] * mat2.m[1][0] +   mat1->m[1][2] * mat2.m[2][0] +  mat1->m[1][3] *   mat2.m[3][0] ;
     
-    double r2 = mat1->m[2][0] * mat2.m[0][0] +    mat1->m[2][1] * mat2.m[1][0] +   mat1->m[2][2] * mat2.m[2][0] +  mat1->m[2][3] *   mat2.m[3][0] ;
-    double r3 = mat1->m[3][0] * mat2.m[0][0] +    mat1->m[3][1] * mat2.m[1][0] +   mat1->m[3][2] * mat2.m[2][0] +  mat1->m[3][3] *   mat2.m[3][0] ;
+    double (*m)[4] = mat1->m;
+    double (*m2)[1] = mat2.m;
+    
+    double r0 = m[0][0] * m2[0][0] +    m[0][1] * m2[1][0] +   m[0][2] * m2[2][0] +  m[0][3] *   m2[3][0] ;
+    double r1 = m[1][0] * m2[0][0] +    m[1][1] * m2[1][0] +   m[1][2] * m2[2][0] +  m[1][3] *   m2[3][0] ;
+    
+    double r2 = m[2][0] * m2[0][0] +    m[2][1] * m2[1][0] +   m[2][2] * m2[2][0] +  m[2][3] *   m2[3][0] ;
+    double r3 = m[3][0] * m2[0][0] +    m[3][1] * m2[1][0] +   m[3][2] * m2[2][0] +  m[3][3] *   m2[3][0] ;
     
     Vector4 vec = {r0, r1, r2, r3};
     

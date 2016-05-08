@@ -45,3 +45,4 @@ Debug/
 *.xcuserstate
 *.xcbkptlist
 *.xcuserstate/*
+*/xcuserdata/
