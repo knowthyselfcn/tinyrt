@@ -44,3 +44,4 @@ Debug/
 *.pdb
 *.xcuserstate
 *.xcbkptlist
+*.xcuserstate/*

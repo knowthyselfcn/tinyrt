@@ -292,10 +292,11 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, 
         retColor.y += color.y;
         retColor.z += color.z;
         
-        
+#ifdef DEBUG
         if (retColor.x > 256 || retColor.y > 256 || retColor.z > 256) {
 //            printf("%f \t\t %f \t\t %f \n", retColor.x, retColor.y, retColor.z);
         }
+#endif
         
       }
 
