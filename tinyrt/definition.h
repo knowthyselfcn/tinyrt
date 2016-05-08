@@ -161,6 +161,7 @@ typedef struct {
 typedef struct {
     void *light;
     LIGHTTYPE type;
+    Vector pos;
 } Light;
 
 typedef struct {

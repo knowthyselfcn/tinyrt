@@ -1,5 +1,8 @@
 #include "shade.h"
+#include "intersect.h"
+
 #include <stdlib.h>
+
 
 
 bool addLight(Lights* lights, Light light)
@@ -67,37 +70,58 @@ bool  add_DirectiontLight(Lights* lights, DirectionLight light)
 
 
 
-
-Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights)
+Color shade_Sphere_PointLight(Ray* ray, Sphere* sphere, Intersect* intersection, PointLight* light)
 {
-    Color color = { 255, 0, 0 };
-
-    Vector* light = (Vector*)lights->data[0].light;
-
-    Vector rayToLigthVector = pointDifference(light, &intersection->point);
+    Color color;
+    
+    Color materialColor = light->color;
+    
+    Vector lightPos = light->pos;
+    
+    Vector rayToLigthVector = pointDifference(&lightPos, &intersection->point);
     Ray rayToLight;
     rayToLight.origin = intersection->point;
     rayToLight.direction = rayToLigthVector;
-
+    
     double intersectRayLen = vectorLength(&rayToLigthVector);
     double length = intersectRayLen;
     double scale = 1 / (length * length * 0.025 + length * 0.001 + 1);  // + 0.03 * length
-
+    
     bool isRayToLightSphereIntersecting = doesRaySphereIntersect(&rayToLight, sphere);
     if (isRayToLightSphereIntersecting) {
         color = { 0 };        // no light, dark
     }
     else {
-        color.x *= scale;				// 模拟光源光衰减
-        color.y *= scale;
-        color.z *= scale;
+        color.x = materialColor.x * scale;				// 模拟光源光衰减
+        color.y = materialColor.y * scale;
+        color.z = materialColor.z * scale;
     }
-
+    
+    
+    
     return color;
 }
 
 
-#include "intersect.h"
+Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights)
+{
+    Color color = { 0 };  // result color
+    
+    
+    for(int i=0; i < lights->size; i++) {
+        Light light = lights->data[i];
+        switch (light.type) {
+            case POINT_LIGHT:
+                color = shade_Sphere_PointLight( ray, sphere, intersection, (PointLight*)light.light);
+                break;
+                
+            default:
+                break;
+        }
+    }
+    
+    return color;
+}
 
 
 Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, Object *objs[], int num)

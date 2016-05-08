@@ -42,3 +42,4 @@ Debug/
 *.tlog
 *.log
 *.pdb
+*.xcuserstate
