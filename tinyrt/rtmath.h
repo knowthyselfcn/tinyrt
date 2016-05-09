@@ -79,7 +79,7 @@ Vector localToWorld(Vector* v, Vector* xPrime, Vector* yPrime, Vector* eye);
 
 bool doesRaySphereIntersect(Ray* ray, Sphere* sphere);
 
-
+Vector getReflect(Vector* n, Vector* v);
 
 
 #endif /* defined(__tinyrt__rtmath__) */

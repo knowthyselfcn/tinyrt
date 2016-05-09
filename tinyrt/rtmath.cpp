@@ -234,9 +234,52 @@ bool doesRaySphereIntersect(Ray* ray, Sphere* sphere)
     return intersects;
 }
 
+// 求镜面反射向量，是单位向量
+Vector getReflect(Vector* n, Vector* in)  
+{
+    // v 作为局部坐标系 x
+    Vector reflVec = { 0 };
+
+    Vector v = scalarVector(in, -1); // inverse
+
+    Vector z = crossVector(&v, n );
+
+    double  cos_theta = scalarProduct(n, &v) / vectorLength(n) / vectorLength(&v);
+    //若 theta < M_PI_2
+    if (cos_theta >= 0) {
+        Vector y = crossVector(&z, n);
+        // 在 n, y, z 坐标系中， reflVec 必定在 ny 平面，
+        double theta = acos(cos_theta);
+        double h = vectorLength(n) / tan(theta);
+        Vector  yp = scalarVector(&y, h);
+        reflVec = vectorAdd(n, &yp);
+        reflVec = normalize(&reflVec);
+    }
+    else {
+        // 错误逻辑
+        throw "bad logic";
+    }
+
+    return reflVec;
+}
+/*
+测试数据
+n = { 1, 0, 0 };
+v = { -1, 1, 0 }
+reflVec = {1, 1, 0}
+*/
+
+
+// ratio: 材质的折射系数
+// in 可能改为 Ray *in 
+Vector getRefraction(const Vector *n, const double ratio, Vector *in)
+{
+    Vector refrVec = { 0 };
 
 
 
+    return refrVec;
+}
 
 
 

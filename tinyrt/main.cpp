@@ -135,6 +135,16 @@ Color traceRay(Ray* ray, Object *objs[], int num)
 }
  
 
+void test() 
+{
+    Vector n = { 1, 0, 0 };
+    Vector v = { -1, 1, 0 };
+    Vector reflVec = getReflect(&n, &v);
+
+
+    std::cout << "d";
+}
+
  
 #include <chrono>
 
@@ -142,6 +152,7 @@ Color traceRay(Ray* ray, Object *objs[], int num)
     
 extern   int pointInRectangle_counter ;
 int main(int argc, char* argv[]) {
+    test();
     auto start = std::chrono::high_resolution_clock::now();
 
     initEyeSpace();
@@ -192,7 +203,7 @@ int main(int argc, char* argv[]) {
  
     //Ray r;
     // x, y 一定要放到下面来定义，否则就错了      //Color c;    private(c)  private(r) 
-#define USE_OMPm
+#define USE_OMP
 #ifdef USE_OMP
 #pragma omp parallel for schedule(dynamic, 8) 
 #endif

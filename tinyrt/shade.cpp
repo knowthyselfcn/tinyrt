@@ -149,7 +149,7 @@ Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* li
 
 Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, DirectionLight* light, Object *objs[], int num)
 {
-    Color retColor;
+    Color retColor = { 0 };
     
     Vector lightDir = light->dir;
     Color lightColor = light->color;
@@ -198,7 +198,7 @@ Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, Directi
 
 Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, Env_light* light, Object *objs[], int num)
 {
-    Color color;
+    Color color = { 0 };
     
     
     
