@@ -22,7 +22,7 @@ bool intersectRect(Ray* ray, Rectangle* rect, Intersect* intersect);
 bool intersectTriangle(Ray* ray, Triangle* triangle, Intersect* intersect);
 
 
-Intersect getFirstIntersection(Ray* ray, Object *objs[], int num);
+Intersect getFirstIntersection(Ray* ray, World *world);
 
 
 

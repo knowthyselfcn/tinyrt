@@ -15,7 +15,7 @@ bool  add_DirectiontLight(Lights* lights, DirectionLight light);
 
 Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights);
 
-Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, Object *objs[], int num);
+Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, World *world);
 
 
 Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect, Lights* lights);

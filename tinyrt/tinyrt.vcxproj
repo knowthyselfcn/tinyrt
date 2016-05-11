@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bmp.h" />
+    <ClInclude Include="brdf.h" />
     <ClInclude Include="intersect.h" />
     <ClInclude Include="rtmath.h" />
     <ClInclude Include="shade.h" />

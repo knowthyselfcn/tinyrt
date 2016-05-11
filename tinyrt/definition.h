@@ -32,9 +32,9 @@ typedef struct {
 	Point origin;
 	Vector direction;
     Vector viewPlanePos;
+    RayType type;
 #ifdef DEBUG
     int px, py;   // for debug
-    RayType type;
 #endif
 } Ray;
 
@@ -164,11 +164,20 @@ typedef struct {
 } Light;
 
 typedef struct {
-    Light data[64];  // 最多支持64 个光源
+    Light data[64];  // 最多支持 64 个光源
     int size;       
 } Lights;
 
 
+typedef struct {
+    Object objs[1024];
+    int size;  // 最多能够放置的物体数量 1024
 
+    Lights lights; // 光源集合
+
+
+
+
+} World;
 
 #endif 

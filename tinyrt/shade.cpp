@@ -147,7 +147,7 @@ Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* li
 
 
 
-Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, DirectionLight* light, Object *objs[], int num)
+Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, DirectionLight* light, World *world)
 {
     Color retColor = { 0 };
     
@@ -165,7 +165,7 @@ Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, Directi
     reflRay.type = REFL_RAY;
 
     
-    Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
+    Intersect reflIntersect = getFirstIntersection(&reflRay, world);
     if (-1 != reflIntersect.objectId)
     {
         Vector t = pointDifference(&reflIntersect.point, &intersect->point);
@@ -196,7 +196,7 @@ Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, Directi
 
 
 
-Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, Env_light* light, Object *objs[], int num)
+Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, Env_light* light, World *world)
 {
     Color color = { 0 };
     
@@ -209,7 +209,7 @@ Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, Env_lig
 }
 
 
-Color shade_Plane_PointLight(Ray* ray, Plane* plane, Intersect* intersect, PointLight* light, Object *objs[], int num)
+Color shade_Plane_PointLight(Ray* ray, Plane* plane, Intersect* intersect, PointLight* light, World *world)
 {
 
     
@@ -233,7 +233,7 @@ Color shade_Plane_PointLight(Ray* ray, Plane* plane, Intersect* intersect, Point
     }
 #endif
     
-    Intersect reflIntersect = getFirstIntersection(&reflRay, objs, num);
+    Intersect reflIntersect = getFirstIntersection(&reflRay, world);
     if (-1 != reflIntersect.objectId)
     {
         Vector t = pointDifference(&reflIntersect.point, &intersect->point);
@@ -266,7 +266,7 @@ Color shade_Plane_PointLight(Ray* ray, Plane* plane, Intersect* intersect, Point
 }
 
 
-Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, Object *objs[], int num)
+Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, World *world)
 {
     Color retColor = { 0, 0, 0 };    // 最终计算出来的颜色
    
@@ -276,13 +276,13 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, 
         Color color = { 0 };
         switch (light.type) {
             case POINT_LIGHT:
-                color = shade_Plane_PointLight(ray, plane, intersect, (PointLight*)light.light, objs, num);
+                color = shade_Plane_PointLight(ray, plane, intersect, (PointLight*)light.light, world);
                 break;
             case ENV_LIGHT:
-                color = shade_Plane_EnvLight(ray, plane, intersect, (Env_light*)light.light, objs, num);
+                color = shade_Plane_EnvLight(ray, plane, intersect, (Env_light*)light.light, world);
                 break;
             case DIRECTION_LIGHT:
-                color = shade_Plane_DirLight(ray, plane, intersect, (DirectionLight*)light.light, objs, num);
+                color = shade_Plane_DirLight(ray, plane, intersect, (DirectionLight*)light.light, world);
                 break;
             default:
                 break;

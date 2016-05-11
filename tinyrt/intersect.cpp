@@ -244,9 +244,6 @@ bool pointInTriangle(Point* z, Triangle* triangle)
 
     Vector pz = pointDifference(z, &triangle->p);  
 
-//    double t1 = scalarProduct(&crossVector(v1, &pz), &crossVector(v1, v2));
-//    double t2 = scalarProduct(&crossVector(v2, &pz), &crossVector(v2, v1));
-    
     bool between = betweenVectors(v1, v2, &pz);
 
     // between two vectors
@@ -278,14 +275,7 @@ bool pointInTriangle(Point* z, Triangle* triangle)
     return in;
 }
 
-
-//if (REFL_RAY == ray->type)
-//{
-//    double ll = 0.1;
-//    if (abs(intersect->point.x) < ll &&  abs(intersect->point.y) < ll   && abs(intersect->point.z) < ll) {
-//        int iiiii = 1;
-//    }
-//}
+ 
 bool intersectTriangle(Ray* ray, Triangle* triangle, Intersect* intersect)
 {
     bool intersected = false;
@@ -358,16 +348,17 @@ bool intersectCuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect)
 
 
 // 判断与哪个物体首次相交
-Intersect getFirstIntersection(Ray* ray, Object *objs[], int num)
+Intersect getFirstIntersection(Ray* ray, World *world)
 {
     Intersect intersection = { 0, 0, 0, -1 };
     List *list = NULL, *curr = NULL, *nearestIntersect = NULL;
 
+    int num = world->size;
     // 收集相交的物体
     //int index = -1;
     for (int i = 0; i < num; i++)
     {
-        Object* obj = objs[i];
+        Object* obj = &world->objs[i];
         bool intersected = false;
         switch (obj->type)
         {

@@ -13,18 +13,21 @@
 //Point light = { 0, 5, 0 };		// 点光源的位置
                          // 世界坐标系
 
-Lights lights; // 光源集合
 
 
+double distance = 1.5; //  眼睛与视窗的距离
+const static int width = 640;  // 640 pixel    0.64m
+const static int height = 480;
 
-void initLights()
+
+void initLights(World *world)
 {
     // 正上方的点光源
     PointLight pointLight = { 0, 5, 0,  255, 0,0};
-    add_PointLight(&lights, pointLight);
+    add_PointLight(&world->lights, pointLight);
 
     DirectionLight dLight = { -1, 0, 0,    30, 30, 30}; // 半绿色
-    add_DirectiontLight(&lights, dLight);
+    add_DirectiontLight(&world->lights, dLight);
 
     int i = 23;
 }
@@ -34,10 +37,6 @@ bool destroyLights()
     return false;
 }
 
-
-double distance =  1.5; //  眼睛与视窗的距离
-const static int width = 640  ;  // 640 pixel    0.64m
-const static int height = 480  ;
 
 // view plane  的指定方式： eye space中 －z 垂直通过view plane
 // view plane 的宽边与eye space y 轴（up）平行
@@ -80,9 +79,9 @@ Ray getRay(int x, int y ) {
     Vector bc = vectorAdd(&b,  &c);
     r.direction = vectorAdd(&eyeSpace.eye2Center, &bc);   //
     r.viewPlanePos = pointAdd(&r.origin, &r.direction);
+    r.type = EYE_RAY;
 #ifdef DEBUG
     r.px = x; r.py = y; // for debug
-    r.type = EYE_RAY;
 #endif
     return r;
 }
@@ -94,36 +93,38 @@ Ray getRay(int x, int y ) {
 
 
 // 针对每一条视线，都需要判断首次与哪个物体相交： 判断交点到眼睛的距离即可
-Color traceRay(Ray* ray, Object *objs[], int num)
+Color traceRay(Ray* ray, World *world)
 {
+    int num = world->size;
+
     Color color = { 0, 0, 0 };  //默认黑色背景
 
     for (int i = 0; i < num; i++)
     {
-        Intersect intersection = getFirstIntersection(ray, objs, num);
+        Intersect intersection = getFirstIntersection(ray, world);
         if (-1 == intersection.objectId) {
             // no intersect
            // std::cout << "sss" << std::endl;
         }
         else {
-            Object* obj = objs[intersection.objectId];
+            Object* obj = &world->objs[intersection.objectId];
             // 开始着色
             switch (obj->type)    
             {
             case SPHERE:
-                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &lights);
+                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &world->lights);
                 break;
             case PLANE:
-                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &lights, objs, num);
+                color = shade_Plane(ray, (Plane*)obj->o, &intersection, &world->lights, world);
                 break;
             case CUBOID:
-                color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &lights);
+                color = shade_Cuboid(ray, (Cuboid*)obj->o, &intersection, &world->lights);
                 break;
             case  RECTANGLE:
-                color = shade_Rectange(ray, (Rectangle*)obj->o, &intersection, &lights);
+                color = shade_Rectange(ray, (Rectangle*)obj->o, &intersection, &world->lights);
                 break;
             case  TRIANGLE:
-                color = shade_Triangle(ray, (Triangle*)obj->o, &intersection, &lights);
+                color = shade_Triangle(ray, (Triangle*)obj->o, &intersection, &world->lights);
                 break;
             default:
                 break;
@@ -148,20 +149,57 @@ void test()
  
 #include <chrono>
 
+// 传入的对象都会被copy一份
+bool addObjs2World(World* world, Object* o)
+{
+    if (world->size < 1024) {
+        Object *obj = &world->objs[world->size];
+        switch (o->type)
+        {
+        case PLANE:
+            obj->type = PLANE;
+            obj->o = malloc(sizeof(Plane) );
+            memcpy(obj->o, o->o, sizeof(Plane));
+            break;
+        case SPHERE:
+            obj->type = SPHERE;
+            obj->o = malloc(sizeof(Sphere));
+            memcpy(obj->o, o->o, sizeof(Sphere));
+            break;
+        case RECTANGLE:
+            obj->type = RECTANGLE;
+            obj->o = malloc(sizeof(Rectangle) );
+            memcpy(obj->o, o->o, sizeof(Rectangle));
+            break;
+        case CUBOID:
+            obj->type = CUBOID;
+            obj->o = malloc(sizeof(Cuboid));
+            memcpy(obj->o, o->o, sizeof(Cuboid));
+            break;
+        case TRIANGLE:
+            obj->type = TRIANGLE;
+            obj->o = malloc(sizeof(Triangle));
+            memcpy(obj->o, o->o, sizeof(Triangle));
+            break;
 
-    
-extern   int pointInRectangle_counter ;
-int main(int argc, char* argv[]) {
-    test();
-    auto start = std::chrono::high_resolution_clock::now();
+        default:
+            break;
+        }
+        world->size++;
+    }
+    else {
 
-    initEyeSpace();
-    initLights();
+    }
+    return false;
+}
 
-	Plane basePlane = { 0, 1, 0,   0,0,0,  255, 0, 0 };    // xoz 平面
-    Sphere sphere = {0, 0.5, 0,      1 };
-    
-    Cuboid cuboid = { -3, 0, 0,  1, 0, -1,    1, 0, 1,  1.414213562373 };   // obj3
+bool buildWorld(World* world)
+{
+    Plane basePlane = { 0, 1, 0, 0, 0, 0, 255, 0, 0 };    // xoz 平面
+
+    Sphere sphere = { 0, 0.5, 0, 1 };
+
+    Cuboid cuboid = { -3, 0, 0, 1, 0, -1, 1, 0, 1, 1.414213562373 };   // obj3
     Point p = cuboid.p;
     Vector tmpYDir = crossVector(&cuboid.hVector, &cuboid.wVector);
     Vector normaledY = normalize(&tmpYDir);
@@ -177,27 +215,49 @@ int main(int argc, char* argv[]) {
     Vector ryVec = { -yVec.x, -yVec.y, -yVec.z };
 
     // 逆时针方向，即可判断
-    cuboid.rectangles[0] = { p,  wVec,  hVec };  // 
-    cuboid.rectangles[1] = { p,  yVec,  wVec, };
+    cuboid.rectangles[0] = { p, wVec, hVec };  // 
+    cuboid.rectangles[1] = { p, yVec, wVec, };
     cuboid.rectangles[2] = { pp, rhVec, rwVec, };
     cuboid.rectangles[3] = { pp, rwVec, ryVec, };
     cuboid.rectangles[4] = { pp, ryVec, rhVec, };
-    cuboid.rectangles[5] = { p,  hVec,  yVec, };
+    cuboid.rectangles[5] = { p, hVec, yVec, };
 
-    Rectangle rect = { -3, 0.5, 1,  2, 0, 0,      0, 2, -2, };
+    Rectangle rect = { -3, 0.5, 1, 2, 0, 0, 0, 2, -2, };
         rect = { 1, 1, 1, 2, 0, 0, 0, 1, -1, };  // for debug Rectangle
-    Triangle triangle = { 3, 1.5, 1,    2, 0, 0,  0, 1, -2, };
-       
 
-    Object objPlane = { PLANE, (void*)&basePlane };
+    Triangle triangle = { 3, 1.5, 1, 2, 0, 0, 0, 1, -2, };
+   
+
+    Object objPlane = { PLANE, (void*)& basePlane };
+    addObjs2World(world, &objPlane);
     Object objSphere = { SPHERE, (void*)& sphere };
+    addObjs2World(world, &objSphere);
     Object objCuboid = { CUBOID, (void*)& cuboid };
+    addObjs2World(world, &objCuboid);
     Object objRect = { RECTANGLE, (void*)& rect };
+    addObjs2World(world, &objRect);
     Object objTriangle = { TRIANGLE, (void*)& triangle };
+    addObjs2World(world, &objTriangle);
 
-    Object *objs[] = { &objPlane,  &objSphere,   &objCuboid,  &objRect, &objTriangle,};  //
-    //
+    return true;
+}
+
     
+extern   int pointInRectangle_counter ;
+int main(int argc, char* argv[]) {
+    //test();
+    auto start = std::chrono::high_resolution_clock::now();
+
+    initEyeSpace();
+
+    World world;
+    world.size = 0;
+    buildWorld(&world);
+
+    initLights(&world);
+
+	
+    Object *objs = world.objs;
 
 	char* rgb = (char*)malloc(3 * width * height * sizeof(char));
  
@@ -211,8 +271,9 @@ int main(int argc, char* argv[]) {
 		for (int y = 0; y<height; y++) {
             Ray r = getRay(x, y);
 
-            int objSize = sizeof(objs) / sizeof(Object*);
-            Color c = traceRay(&r, objs, objSize);
+            //int objSize = sizeof(objs) / sizeof(Object*);
+            int objSize = world.size;
+            Color c = traceRay(&r, &world);
 
             int ipos = 3 * (width * y + x);
 
