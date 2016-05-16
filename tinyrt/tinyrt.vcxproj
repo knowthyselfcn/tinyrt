@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bmp.cpp" />
+    <ClCompile Include="brdf.cpp" />
     <ClCompile Include="definition.h" />
     <ClCompile Include="intersect.cpp" />
     <ClCompile Include="main.cpp" />
