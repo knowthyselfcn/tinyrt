@@ -73,7 +73,7 @@ bool  add_DirectiontLight(Lights* lights, DirectionLight light)
 
 Color shade_Sphere_PointLight(Ray* ray, Sphere* sphere, Intersect* intersection, PointLight* light)
 {
-    Color color = { 0 };
+    Color color = { 0.0f, 0.0f, 0.0f };
     
     Color materialColor = light->color;
     
@@ -86,8 +86,9 @@ Color shade_Sphere_PointLight(Ray* ray, Sphere* sphere, Intersect* intersection,
     
     double intersectRayLen = vectorLength(&rayToLigthVector);
     double length = intersectRayLen;
-    double scale = 1 / (length * length * 0.025 + length * 0.001 + 1);  // + 0.03 * length
-    
+    double scale = 1 / (length * length * 0.005 + length * 0.001 + 1);  // + 0.03 * length
+    assert(scale < 1.0f);
+
     bool isRayToLightSphereIntersecting = doesRaySphereIntersect(&rayToLight, sphere);
     if (isRayToLightSphereIntersecting) {
         color = { 0 };        // no light, dark
@@ -119,14 +120,13 @@ Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* li
     
     for(int i=0; i < lights->size; i++) {
         Light light = lights->data[i];
-        Color color;
+        Color color = {0.0, 0.0, 0.0};
         switch (light.type) {
             case POINT_LIGHT:
                 color = shade_Sphere_PointLight( ray, sphere, intersection, (PointLight*)light.light);
                 break;
             case DIRECTION_LIGHT:
                 color = shade_Sphere_DirLight(ray, sphere, intersection, (DirectionLight*)light.light );
-                
             default:
                 break;
         }
@@ -247,8 +247,12 @@ Color shade_Plane_PointLight(Ray* ray, Plane* plane, Intersect* intersect, Point
     }
     
     if (canReachLight){
-        double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
-        assert(scale < 1);
+        double scale = 1 / (length * length * 0.005 + length * 0.001 + 1);  // + 0.03 * length
+        assert(scale < 1.0f );
+
+        //if (scale > 1.0f)
+        //    printf("%f\n", scale);
+
         color.x *= scale;				// 模拟光源光衰减
         color.y *= scale;
         color.z *= scale;
@@ -293,7 +297,7 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, 
         retColor.z += color.z;
         
 #ifdef DEBUG
-        if (retColor.x > 256 || retColor.y > 256 || retColor.z > 256) {
+        if (retColor.x > 1.0f || retColor.y > 1.0f || retColor.z > 1.0f) {
 //            printf("%f \t\t %f \t\t %f \n", retColor.x, retColor.y, retColor.z);
         }
 #endif
@@ -327,27 +331,27 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, 
 */
 Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect, Lights* lights)
 {
-    Color color = { 0, 0, 255 };
+    Color color = { 0, 0, 1.0f };
 //#ifndef DEBUG
     switch (intersect->rectIdx)
     {
     case 0:
-        color = { 255, 0, 0 };
+        color = { 1.0f, 0, 0 };
         break;
     case 1:
-        color = { 0, 255, 0 };
+        color = { 0, 1.0f, 0 };
         break;
     case 2:
-        color = { 0, 0, 255 };  // 
+        color = { 0, 0, 1.0 };  // 
         break;
     case 3:
-        color = { 128, 128, 0 };  // 
+        color = { 0.5, 0.5, 0 };  // 
         break;
     case 4:
-        color = { 128, 0, 128 };
+        color = { 0.5, 0, 0.5 };
         break;
     case 5:
-        color = { 128, 128, 128 };  //
+        color = { 0.5, 0.5, 0.5 };  //
         break;
     default:
         break;
@@ -360,6 +364,8 @@ Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect, Lights* light
     double length = vectorLength(&directionToLight);
 
     double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+    assert(scale < 1.0f);
+
     //printf("%f\n", scale);
     color.x *= scale;				// 模拟光源光衰减
     color.y *= scale;
@@ -371,13 +377,15 @@ Color shade_Cuboid(Ray* ray, Cuboid* cuboid, Intersect* intersect, Lights* light
 
 Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Lights* lights)
 {
-    Color color = { 0, 0, 200 };
+    Color color = { 0, 0, 0.8 };
     Vector* light = (Vector*)lights->data[0].light;
     Vector directionToLight = pointDifference(light, &intersect->point);
 
     double length = vectorLength(&directionToLight);
 
     double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+    assert(scale < 1.0f);
+
     //printf("%f\n", scale);
     color.x *= scale;				// 模拟光源光衰减
     color.y *= scale;
@@ -390,18 +398,20 @@ Color shade_Rectange(Ray* ray, Rectangle* cuboid, Intersect* intersect, Lights* 
 
 Color shade_Triangle(Ray* ray, Triangle* triangle, Intersect* intersect, Lights* lights)
 {
-    Color color = { 0, 0, 200 };
+    Color color = { 0, 0, 0.8 };
     Vector* light = (Vector*)lights->data[0].light;
     Vector directionToLight = pointDifference(light, &intersect->point);
 
     double length = vectorLength(&directionToLight);
 
-    double scale = 1 / (length * length * 0.005 + length * 0.01 + 1);  // + 0.03 * length
+    double scale = 1 / (length * length * 0.005 + length * 0.001 + 1);  // + 0.03 * length
+    assert(scale < 1.0f);
+    
     //printf("%f\n", scale);
+
     color.x *= scale;				// 模拟光源光衰减
     color.y *= scale;
     color.z *= scale;
-
 
     return color;
 }

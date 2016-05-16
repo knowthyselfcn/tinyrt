@@ -10,10 +10,6 @@
 
 #include <iostream>
 
-//Point light = { 0, 5, 0 };		// 点光源的位置
-                         // 世界坐标系
-
-
 
 double distance = 1.5; //  眼睛与视窗的距离
 const static int width = 640;  // 640 pixel    0.64m
@@ -22,11 +18,13 @@ const static int height = 480;
 
 void initLights(World *world)
 {
+    world->lights.size = 0;
+
     // 正上方的点光源
-    PointLight pointLight = { 0, 5, 0,  255, 0,0};
+    PointLight pointLight = { 0, 5, 0,  1.0, 0.0, 0.0 };
     add_PointLight(&world->lights, pointLight);
 
-    DirectionLight dLight = { -1, 0, 0,    30, 30, 30}; // 半绿色
+    DirectionLight dLight = { -1, 0, 0,     0.12, 0.12, 0.12 }; // 半绿色
     add_DirectiontLight(&world->lights, dLight);
 
     int i = 23;
@@ -34,6 +32,7 @@ void initLights(World *world)
 
 bool destroyLights()
 {
+    
     return false;
 }
 
@@ -195,9 +194,9 @@ bool addObjs2World(World* world, Object* o)
 
 bool buildWorld(World* world)
 {
-    Plane basePlane = { 0, 1, 0, 0, 0, 0, 255, 0, 0 };    // xoz 平面
+    Plane basePlane = { 0, 1, 0, 0, 0, 0,   1.0f, 0, 0 };    // xoz 平面
 
-    Sphere sphere = { 0, 0.5, 0, 1 };
+    Sphere sphere = { 0, 0.5, 0,    1.0f };
 
     Cuboid cuboid = { -3, 0, 0, 1, 0, -1, 1, 0, 1, 1.414213562373 };   // obj3
     Point p = cuboid.p;
@@ -277,9 +276,13 @@ int main(int argc, char* argv[]) {
 
             int ipos = 3 * (width * y + x);
 
-			rgb[ipos + 2] = (unsigned char)c.z;
-			rgb[ipos + 1] = (unsigned char)c.y;
-			rgb[ipos] = (unsigned char)c.x;
+            //if (c.y > 1.0 || c.x > 1.0f || c.z >1.0f)
+            //    printf("%f \t%f \t%f", c.z, c.y, c.x);
+
+            // 
+			rgb[ipos + 2] = (unsigned char) (c.z * 255 );
+            rgb[ipos + 1] = (unsigned char)(c.y * 255);
+            rgb[ipos] = (unsigned char) (c.x * 255);
 		}
 	}
 	write_bmp("test.bmp", width, height, rgb);

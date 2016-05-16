@@ -4,6 +4,8 @@
 
 static const double epsilon = 0.000000000000001;
 
+typedef unsigned char byte;
+
 typedef struct {
 	double  x;
 	double 	y;
@@ -11,6 +13,12 @@ typedef struct {
 } Vector;
 typedef Vector Point;
 typedef Vector Color;
+
+typedef struct {
+    byte r;
+    byte g;
+    byte b;
+} RGBColor;
 
 typedef struct {
     double  x;
@@ -25,7 +33,7 @@ enum RayType
     REFL_RAY,
     REFR_RAY,
     LIGHT_RAY,
-    __Ray_Type_Size
+    _Ray_Type_Size
 };
 
 typedef struct {
@@ -157,6 +165,17 @@ typedef struct {
 typedef struct {
     Color color;
 } Env_light;
+
+// 环境光遮挡功能实现有两种方式，
+//1： 通过基于半球采样的相关材质来实现，需要指定各个对象的材质
+//2： 可以使用下面的新的光源代替上面的 Env_light
+typedef struct {
+    Vector u;
+    Vector v;
+    Vector w;
+    Color min_amount;
+    //Sampler sampler_p;
+} AmbientOccluderLight;
 
 typedef struct {
     void *light;
