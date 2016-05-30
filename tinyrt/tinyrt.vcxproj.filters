@@ -18,9 +18,6 @@
     <ClCompile Include="definition.h">
       <Filter>头文件</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="bmp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>

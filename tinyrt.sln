@@ -5,6 +5,8 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tinyrt", "tinyrt\tinyrt.vcxproj", "{6632CB16-72FF-4B01-AA7E-9C49D2C5F31A}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{04C3E840-8DA7-4B68-BE4E-CA83248BED0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{6632CB16-72FF-4B01-AA7E-9C49D2C5F31A}.Debug|x64.Build.0 = Debug|x64
 		{6632CB16-72FF-4B01-AA7E-9C49D2C5F31A}.Release|x64.ActiveCfg = Release|x64
 		{6632CB16-72FF-4B01-AA7E-9C49D2C5F31A}.Release|x64.Build.0 = Release|x64
+		{04C3E840-8DA7-4B68-BE4E-CA83248BED0D}.Debug|x64.ActiveCfg = Debug|x64
+		{04C3E840-8DA7-4B68-BE4E-CA83248BED0D}.Debug|x64.Build.0 = Debug|x64
+		{04C3E840-8DA7-4B68-BE4E-CA83248BED0D}.Release|x64.ActiveCfg = Release|x64
+		{04C3E840-8DA7-4B68-BE4E-CA83248BED0D}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
