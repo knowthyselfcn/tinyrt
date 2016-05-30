@@ -12,8 +12,9 @@ bool  add_PointLight(Lights* lights, PointLight light);
 bool  remove_PointLight(Lights* lights, PointLight light);
 
 bool  add_DirectiontLight(Lights* lights, DirectionLight light);
+bool  add_AmbientLight(Lights* lights, AmbientLight light);
 
-Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights);
+Color shade_Sphere(Ray* ray, Object* sphere, Intersect* intersection, Lights* lights);
 
 Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, World *world);
 

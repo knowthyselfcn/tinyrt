@@ -282,7 +282,27 @@ Vector getRefraction(const Vector *n, const double ratio, Vector *in)
 }
 
 
+void map_samples_to_hemisphere( Sampler *sampler, float e, int size)
+{
+    Point *hemiSphereSamples = (Point*)malloc(sizeof(Point) * size);
 
+    Point2d *samples = sampler->samples;
+
+    for (int i = 0; i < size; i++){
+        float cos_phi = cos(2.0 * M_PI * sampler->samples[i].x);
+        float sin_phi = sin(2.0 * M_PI * sampler->samples[i].x);
+        float cos_theta = pow((1.0 - samples[i].y), 1.0 / (e + 1.0) );
+        float sin_theta = sqrt(1.0 - cos_theta * cos_theta);
+
+        float pu = sin_theta * cos_phi;
+        float pv = sin_theta * sin_phi;
+        float pw = cos_theta;
+
+        ( hemiSphereSamples[i] ) = {pu, pv, pw};
+    }
+
+ 
+}
 
 
 

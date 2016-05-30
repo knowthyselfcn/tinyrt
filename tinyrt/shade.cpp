@@ -65,6 +65,23 @@ bool  add_DirectiontLight(Lights* lights, DirectionLight light)
     return ret;
 }
 
+bool  add_AmbientLight(Lights* lights, AmbientLight light)
+{
+    bool ret = false;
+
+    Light ambientLight;
+    ambientLight.light = (void*)malloc(sizeof(AmbientLight));
+    ambientLight.type = AMBIENT_LIGHT;
+    *(AmbientLight *)ambientLight.light = { light };
+
+    ret = addLight(lights, ambientLight);
+    if (false == ret)
+    {
+        free(ambientLight.light);
+    }
+
+    return ret;
+}
 
 
 
@@ -113,7 +130,32 @@ Color shade_Sphere_DirLight(Ray* ray, Sphere* sphere, Intersect* intersection, D
 }
 
 
-Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* lights)
+Color shade_Sphere_AmbientLight(Ray* ray, Object* sphere, Intersect* intersection, AmbientLight* light)
+{
+    Color color = { 0 };
+    
+    Vector wo = normalize(&ray->direction);
+    switch ( sphere->material.type)
+    {
+    case MATTE: {
+        Matte *matte = (Matte*)sphere->material.data;
+        Color lc = scalarVector(&light->color, light->ls);
+        Color ambient_brdf_Rho = scalarVector(&matte->ambient_brdf.cd, matte->ambient_brdf.kd);
+        Color L = colorMultiply(&lc, &ambient_brdf_Rho);
+        //printf()
+    }
+        break;
+    default:
+        break;
+    }
+
+
+
+    return color;
+}
+
+
+Color shade_Sphere(Ray* ray, Object* sphere, Intersect* intersection, Lights* lights)
 {
     Color retColor = { 0 };  // result color
     
@@ -123,10 +165,12 @@ Color shade_Sphere(Ray* ray, Sphere* sphere, Intersect* intersection, Lights* li
         Color color = {0.0, 0.0, 0.0};
         switch (light.type) {
             case POINT_LIGHT:
-                color = shade_Sphere_PointLight( ray, sphere, intersection, (PointLight*)light.light);
+                color = shade_Sphere_PointLight( ray, (Sphere*)sphere->o, intersection, (PointLight*)light.light);
                 break;
             case DIRECTION_LIGHT:
-                color = shade_Sphere_DirLight(ray, sphere, intersection, (DirectionLight*)light.light );
+                color = shade_Sphere_DirLight(ray, (Sphere*)sphere->o, intersection, (DirectionLight*)light.light);
+            case AMBIENT_LIGHT:
+                color = shade_Sphere_AmbientLight(ray, sphere, intersection, (AmbientLight*)light.light);
             default:
                 break;
         }
@@ -196,7 +240,7 @@ Color shade_Plane_DirLight(Ray* ray, Plane* plane, Intersect* intersect, Directi
 
 
 
-Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, Env_light* light, World *world)
+Color shade_Plane_EnvLight(Ray* ray, Plane* plane, Intersect* intersect, AmbientLight* light, World *world)
 {
     Color color = { 0 };
     
@@ -282,8 +326,8 @@ Color shade_Plane(Ray* ray, Plane* plane, Intersect* intersect, Lights* lights, 
             case POINT_LIGHT:
                 color = shade_Plane_PointLight(ray, plane, intersect, (PointLight*)light.light, world);
                 break;
-            case ENV_LIGHT:
-                color = shade_Plane_EnvLight(ray, plane, intersect, (Env_light*)light.light, world);
+            case AMBIENT_LIGHT:
+                color = shade_Plane_EnvLight(ray, plane, intersect, (AmbientLight*) light.light, world);
                 break;
             case DIRECTION_LIGHT:
                 color = shade_Plane_DirLight(ray, plane, intersect, (DirectionLight*)light.light, world);

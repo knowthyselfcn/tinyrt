@@ -1,6 +1,7 @@
 #ifndef RT_DEFINITION_H
 #define RT_DEFINITION_H
 
+#define _USE_MATH_DEFINES
 
 static const double epsilon = 0.000000000000001;
 
@@ -130,10 +131,37 @@ enum TYPE {
     FRUSTRUM
 };
 
+enum MATERIAL_TYPE {
+    MATTE,
+    PLASTIC,
+    METAL,
+    SILK,
+    _MATERIAL_TYPE_SIZE
+};
+
+typedef struct {
+    float	kd;
+    Color 	cd;
+} Lambertian;
+
+typedef struct {
+    Lambertian ambient_brdf;
+    Lambertian diffuse_brdf;
+} Matte;
+
+typedef struct {
+    MATERIAL_TYPE type;
+    void *data;
+} Material;
+
+// 简单的示例程序中，这种简单的结构就没有存在的必要了，直接在上层代码中实现即可
+
+
 // need to free the source manually
 typedef struct {
     enum TYPE type;
     void *o;
+    Material material;
 } Object;
 
 
@@ -148,7 +176,7 @@ enum LIGHTTYPE
 {
     POINT_LIGHT,
     DIRECTION_LIGHT,
-    ENV_LIGHT,
+    AMBIENT_LIGHT,
 };
 
 
@@ -160,11 +188,13 @@ typedef struct {
 typedef struct {
     Vector dir;
     Vector color;
+    double ls;
 } DirectionLight;
 
 typedef struct {
     Color color;
-} Env_light;
+    double ls;  // scale_radiance
+} AmbientLight;
 
 // 环境光遮挡功能实现有两种方式，
 //1： 通过基于半球采样的相关材质来实现，需要指定各个对象的材质
@@ -198,5 +228,25 @@ typedef struct {
 
 
 } World;
+
+typedef struct {
+    double x;
+    double y;
+} Point2d;
+
+
+typedef struct {
+    int num_samples; // the number of sample points in a pattern
+    int num_sets;    // the number of sample sets(patterns) stored
+    Point2d *samples; // 动态内存，需要注意管理
+    int *shuffed_indicies;
+    unsigned long count;
+    int jump;
+
+} Sampler;
+
+
+
+
 
 #endif 

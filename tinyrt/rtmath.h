@@ -1,10 +1,13 @@
 #ifndef __tinyrt__rtmath__
 #define __tinyrt__rtmath__
 
+#define USE
+
 #include "definition.h"
 #include <math.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 
 
 //bool inverseMat2_2(Mat2* mat1, Mat2* m2);
@@ -80,6 +83,22 @@ Vector localToWorld(Vector* v, Vector* xPrime, Vector* yPrime, Vector* eye);
 bool doesRaySphereIntersect(Ray* ray, Sphere* sphere);
 
 Vector getReflect(Vector* n, Vector* v);
+
+
+
+
+
+inline Color colorMultiply(Color* c1, Color *c2) { 
+    Color c = {c1->x * c2->x, c1->y * c2->y, c1->z * c2->z};
+    return c;
+};
+
+
+
+
+
+
+
 
 
 #endif /* defined(__tinyrt__rtmath__) */

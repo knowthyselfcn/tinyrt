@@ -24,8 +24,12 @@ void initLights(World *world)
     PointLight pointLight = { 0, 5, 0,  1.0, 0.0, 0.0 };
     add_PointLight(&world->lights, pointLight);
 
-    DirectionLight dLight = { -1, 0, 0,     0.12, 0.12, 0.12 }; // °ëÂÌÉ«
+    DirectionLight dLight = { -1, 0, 0,     0.12, 0.12, 0.12,     3.0f }; // °ëÂÌÉ«
     add_DirectiontLight(&world->lights, dLight);
+
+
+    AmbientLight ambientLight = {0.1, 0.1, 0.1,   1.0f};
+    add_AmbientLight(&world->lights, ambientLight);
 
     int i = 23;
 }
@@ -111,7 +115,7 @@ Color traceRay(Ray* ray, World *world)
             switch (obj->type)    
             {
             case SPHERE:
-                color = shade_Sphere(ray, (Sphere*)obj->o, &intersection, &world->lights);
+                color = shade_Sphere(ray,  obj, &intersection, &world->lights);
                 break;
             case PLANE:
                 color = shade_Plane(ray, (Plane*)obj->o, &intersection, &world->lights, world);
@@ -140,7 +144,6 @@ void test()
     Vector n = { 1, 0, 0 };
     Vector v = { -1, 1, 0 };
     Vector reflVec = getReflect(&n, &v);
-
 
     std::cout << "d";
 }
@@ -229,13 +232,21 @@ bool buildWorld(World* world)
 
     Object objPlane = { PLANE, (void*)& basePlane };
     addObjs2World(world, &objPlane);
-    Object objSphere = { SPHERE, (void*)& sphere };
+
+
+    Matte *matte = (Matte *)malloc(sizeof(Matte));
+    matte->ambient_brdf = {0.75, };
+    Material sphereMaterial = {MATTE, (void*)matte };
+    Object objSphere = { SPHERE, (void*)& sphere, sphereMaterial };
     addObjs2World(world, &objSphere);
-    Object objCuboid = { CUBOID, (void*)& cuboid };
+
+    Object objCuboid = { CUBOID, (void*)& cuboid, sphereMaterial };
     addObjs2World(world, &objCuboid);
-    Object objRect = { RECTANGLE, (void*)& rect };
+
+    Object objRect = { RECTANGLE, (void*)& rect, sphereMaterial };
     addObjs2World(world, &objRect);
-    Object objTriangle = { TRIANGLE, (void*)& triangle };
+
+    Object objTriangle = { TRIANGLE, (void*)& triangle, sphereMaterial };
     addObjs2World(world, &objTriangle);
 
     return true;
